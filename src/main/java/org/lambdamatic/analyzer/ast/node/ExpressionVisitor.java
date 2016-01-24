@@ -41,7 +41,7 @@ public abstract class ExpressionVisitor {
         case FIELD_ACCESS:
           return visitFieldAccessExpression((FieldAccess) expr);
         case COMPOUND:
-          return visitInfixExpression((CompoundExpression) expr);
+          return visitCompoundExpression((CompoundExpression) expr);
         case INSTANCE_OF:
           return visitInstanceOfExpression((InstanceOf) expr);
         case OBJECT_INSTANCIATION:
@@ -173,7 +173,7 @@ public abstract class ExpressionVisitor {
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
   @SuppressWarnings("static-method")
-  public boolean visitInfixExpression(final CompoundExpression expr) {
+  public boolean visitCompoundExpression(final CompoundExpression expr) {
     return true;
   }
 

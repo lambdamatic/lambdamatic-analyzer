@@ -52,7 +52,7 @@ public class ExpressionSanitizer extends ExpressionVisitor {
    * @param expr the {@link CompoundExpression} to analyze
    */
   @Override
-  public boolean visitInfixExpression(final CompoundExpression expr) {
+  public boolean visitCompoundExpression(final CompoundExpression expr) {
     // manually visit all operands, first
     expr.getOperands().stream().forEach(operand -> operand.accept(this));
     if ((expr.getOperator() == CompoundExpressionOperator.EQUALS
