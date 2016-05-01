@@ -16,8 +16,7 @@ import org.lambdamatic.analyzer.exception.AnalyzeException;
 /**
  * A utility class for math operations.
  * 
- * @author xcoulon
- *
+ * @author Xavier Coulon
  */
 public class MathUtils {
 
@@ -36,9 +35,8 @@ public class MathUtils {
   public static Number add(final Number left, final Number right) {
     if (isDecimal(left) || isDecimal(right)) {
       return new BigDecimal(left.toString()).add(new BigDecimal(right.toString()));
-    } else {
-      return new BigInteger(left.toString()).add(new BigInteger(right.toString()));
     }
+    return new BigInteger(left.toString()).add(new BigInteger(right.toString()));
   }
 
   /**
@@ -51,9 +49,8 @@ public class MathUtils {
   public static Number subtract(final Number left, final Number right) {
     if (isDecimal(left) || isDecimal(right)) {
       return new BigDecimal(left.toString()).subtract(new BigDecimal(right.toString()));
-    } else {
-      return new BigInteger(left.toString()).subtract(new BigInteger(right.toString()));
     }
+    return new BigInteger(left.toString()).subtract(new BigInteger(right.toString()));
   }
 
   /**
@@ -66,9 +63,8 @@ public class MathUtils {
   public static Number multiply(final Number left, final Number right) {
     if (isDecimal(left) || isDecimal(right)) {
       return new BigDecimal(left.toString()).multiply(new BigDecimal(right.toString()));
-    } else {
-      return new BigInteger(left.toString()).multiply(new BigInteger(right.toString()));
     }
+    return new BigInteger(left.toString()).multiply(new BigInteger(right.toString()));
   }
 
   /**
@@ -81,9 +77,8 @@ public class MathUtils {
   public static Number divide(final Number left, final Number right) {
     if (isDecimal(left) || isDecimal(right)) {
       return new BigDecimal(left.toString()).divide(new BigDecimal(right.toString()));
-    } else {
-      return new BigInteger(left.toString()).divide(new BigInteger(right.toString()));
     }
+    return new BigInteger(left.toString()).divide(new BigInteger(right.toString()));
   }
 
   /**

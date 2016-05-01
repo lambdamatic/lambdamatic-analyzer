@@ -1,0 +1,5 @@
+projectKey=org.lambdamatic:lambdamatic-analyzer
+serverUrl=http://localhost:9000
+dashboardUrl=http://localhost:9000/dashboard/index/org.lambdamatic:lambdamatic-analyzer
+ceTaskId=AVQty1aCewblL3FywEWy
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AVQty1aCewblL3FywEWy

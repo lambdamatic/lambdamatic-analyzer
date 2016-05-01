@@ -26,6 +26,7 @@ public class CapturedArgumentRef extends Expression {
    * index of the {@link CapturedArgument} in the {@link SerializedLambda}.
    */
   private final int index;
+  
   /** the Java type of the referenced Java value. */
   private final Class<?> javaType;
 

@@ -177,7 +177,7 @@ public class LambdaExpressionAnalyzer {
    *         {@code lambdaExpression}.
    * @throws AnalyzeException if the analysis failed
    */
-  public LambdaExpression analyzeExpression(final Object lambdaExpression) throws AnalyzeException {
+  public LambdaExpression analyzeExpression(final Object lambdaExpression) {
     final SerializedLambdaInfo lambdaInfo = getSerializedLambdaInfo(lambdaExpression);
     final LambdaExpression rawExpression = analyzeExpression(lambdaInfo);
     final List<Statement> result =
@@ -196,22 +196,19 @@ public class LambdaExpressionAnalyzer {
    *         {@code lambdaExpression}.
    * @throws AnalyzeException if the analysis failed.
    */
-  public LambdaExpression analyzeExpression(final SerializedLambdaInfo serializedLambdaInfo)
-      throws AnalyzeException {
+  public synchronized LambdaExpression analyzeExpression(final SerializedLambdaInfo serializedLambdaInfo) {
     try {
       final String methodImplementationId = serializedLambdaInfo.getImplMethodId();
-      synchronized (methodImplementationId) {
-        if (this.cache.containsKey(methodImplementationId)) {
-          this.listeners.stream().forEach(l -> l.cacheHit(methodImplementationId));
-        } else {
-          this.listeners.stream().forEach(l -> l.cacheMissed(methodImplementationId));
-          final LambdaExpression rawExpression = analyzeByteCode(serializedLambdaInfo);
-          this.cache.put(methodImplementationId, rawExpression);
-        }
-        // we need to return a duplicate of the expression to be sure the original is kept
-        // *unchanged*
-        return (LambdaExpression) this.cache.get(methodImplementationId).duplicate();
+      if (this.cache.containsKey(methodImplementationId)) {
+        this.listeners.stream().forEach(l -> l.cacheHit(methodImplementationId));
+      } else {
+        this.listeners.stream().forEach(l -> l.cacheMissed(methodImplementationId));
+        final LambdaExpression rawExpression = analyzeByteCode(serializedLambdaInfo);
+        this.cache.put(methodImplementationId, rawExpression);
       }
+      // we need to return a duplicate of the expression to be sure the original is kept
+      // *unchanged*
+      return (LambdaExpression) this.cache.get(methodImplementationId).duplicate();
     } catch (IOException e) {
       throw new AnalyzeException("Failed to analyze lambda expression", e);
     }
@@ -224,7 +221,7 @@ public class LambdaExpressionAnalyzer {
    * @return the AST {@link Expression}
    * @throws IOException if a problem occurred while reading the underlying {@link Class}
    */
-  private LambdaExpression analyzeByteCode(final SerializedLambdaInfo lambdaInfo)
+  private static LambdaExpression analyzeByteCode(final SerializedLambdaInfo lambdaInfo)
       throws IOException {
     LOGGER.debug("Analyzing lambda expression bytecode at {}.{}", lambdaInfo.getImplClassName(),
         lambdaInfo.getImplMethodName());
@@ -233,8 +230,8 @@ public class LambdaExpressionAnalyzer {
         lambdaExpressionReader.readBytecodeStatement(lambdaInfo);
     final List<LocalVariable> lambdaExpressionArguments = bytecode.getRight();
     final List<Statement> lambdaExpressionStatements = bytecode.getLeft();
-    final List<Statement> processedBlock = lambdaExpressionStatements.stream().map(s -> thinOut(s))
-        .map(s -> simplify(s)).collect(Collectors.toList());
+    final List<Statement> processedBlock = lambdaExpressionStatements.stream().map(LambdaExpressionAnalyzer::thinOut)
+        .map(LambdaExpressionAnalyzer::simplify).collect(Collectors.toList());
     // first argument that is not a captured argument.
     final LocalVariable lambdaExpressionArgument =
         lambdaExpressionArguments.get(lambdaInfo.getCapturedArguments().size());
@@ -242,16 +239,16 @@ public class LambdaExpressionAnalyzer {
         lambdaExpressionArgument.getName());
   }
 
-  private Statement simplify(final Statement statement) {
+  private static Statement simplify(final Statement statement) {
     switch (statement.getStatementType()) {
       case CONTROL_FLOW_STMT:
         final ControlFlowStatement controlFlowStmt = (ControlFlowStatement) statement;
         final Expression simplifiedControlFlowExpression =
             simplify(controlFlowStmt.getControlFlowExpression());
         final List<Statement> simplifiedThenStmts = controlFlowStmt.getThenStatements().stream()
-            .map(s -> simplify(s)).collect(Collectors.toList());
+            .map(LambdaExpressionAnalyzer::simplify).collect(Collectors.toList());
         final List<Statement> simplifiedElseStmts = controlFlowStmt.getElseStatements().stream()
-            .map(s -> simplify(s)).collect(Collectors.toList());
+            .map(LambdaExpressionAnalyzer::simplify).collect(Collectors.toList());
         return new ControlFlowStatement(simplifiedControlFlowExpression, simplifiedThenStmts,
             simplifiedElseStmts);
       case EXPRESSION_STMT:
@@ -296,16 +293,13 @@ public class LambdaExpressionAnalyzer {
     // nothing to process
     if (capturedArguments.isEmpty()) {
       return statements;
-    } else {
-      // retrieve the captured arguments from the given serializedLambda
-      final List<Object> capturedArgValues =
-          capturedArguments.stream().map(a -> a.getValue()).collect(Collectors.toList());
-      statements.stream().forEach(s -> s.accept(new StatementExpressionsDelegateVisitor(
-          new CapturedArgumentsEvaluator(capturedArgValues))));
-      // final StatementVisitor visitor = new CapturedArgumentsEvaluator(capturedArgValues);
-      // return ExpressionVisitorUtil.visit(sourceExpression, visitor);
-      return statements;
     }
+    // retrieve the captured arguments from the given serializedLambda
+    final List<Object> capturedArgValues =
+        capturedArguments.stream().map(a -> a.getValue()).collect(Collectors.toList());
+    statements.stream().forEach(s -> s.accept(new StatementExpressionsDelegateVisitor(
+        new CapturedArgumentsEvaluator(capturedArgValues))));
+    return statements;
   }
 
   /**
@@ -319,64 +313,63 @@ public class LambdaExpressionAnalyzer {
     LOGGER.debug("About to simplify \n\t{}", NodeUtils.prettyPrint(statement));
     if (statement.getStatementType() == StatementType.EXPRESSION_STMT) {
       return statement;
-    } else {
-      // find branches that end with 'return 1'
-      final ReturnTruePathFilter filter = new ReturnTruePathFilter();
-      statement.accept(filter);
-      final List<ReturnStatement> returnStmts = filter.getReturnStmts();
-      final List<Expression> expressions = new ArrayList<>();
-      for (ReturnStatement returnStmt : returnStmts) {
-        final LinkedList<Expression> relevantExpressions = new LinkedList<>();
-        // current node being evaluated
-        Statement currentStmt = returnStmt;
-        // previous node evaluated, because it is important to remember
-        // the path that was taken (in case of ConditionalStatements)
-        Statement previousStmt = null;
-        while (currentStmt != null) {
-          switch (currentStmt.getStatementType()) {
-            case CONTROL_FLOW_STMT:
-              final ControlFlowStatement controlFlowStatement = (ControlFlowStatement) currentStmt;
-              final Expression controlFlowExpression =
-                  controlFlowStatement.getControlFlowExpression();
-              // if we come from the "eval true" path on this
-              // condition
-              if (controlFlowStatement.getThenStatements().contains(previousStmt)) {
-                relevantExpressions.add(0, controlFlowExpression);
-              } else {
-                relevantExpressions.add(0, controlFlowExpression.inverse());
-              }
-              break;
-            case RETURN_STMT:
-              final Expression returnExpression = ((ReturnStatement) currentStmt).getExpression();
-              if (returnExpression.getExpressionType() == ExpressionType.METHOD_INVOCATION) {
-                relevantExpressions.add(0, returnExpression);
-              }
-              break;
-            default:
-              LOGGER.trace("Ignoring node '{}'", currentStmt);
-              break;
-          }
-          previousStmt = currentStmt;
-          currentStmt = currentStmt.getParent();
-        }
-        if (relevantExpressions.size() > 1) {
-          expressions.add(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
-              relevantExpressions));
-        } else if (!relevantExpressions.isEmpty()) {
-          expressions.add(relevantExpressions.getFirst());
-        }
-
-      }
-      if (expressions.isEmpty()) {
-        return statement;
-      }
-      final Statement result = (expressions.size() > 1)
-          ? new ReturnStatement(
-              new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, expressions))
-          : new ReturnStatement(expressions.get(0));
-      LOGGER.debug("Thinned out expression: {}", result.toString());
-      return result;
     }
+    // find branches that end with 'return 1'
+    final ReturnTruePathFilter filter = new ReturnTruePathFilter();
+    statement.accept(filter);
+    final List<ReturnStatement> returnStmts = filter.getReturnStmts();
+    final List<Expression> expressions = new ArrayList<>();
+    for (ReturnStatement returnStmt : returnStmts) {
+      final LinkedList<Expression> relevantExpressions = new LinkedList<>();
+      // current node being evaluated
+      Statement currentStmt = returnStmt;
+      // previous node evaluated, because it is important to remember
+      // the path that was taken (in case of ConditionalStatements)
+      Statement previousStmt = null;
+      while (currentStmt != null) {
+        switch (currentStmt.getStatementType()) {
+          case CONTROL_FLOW_STMT:
+            final ControlFlowStatement controlFlowStatement = (ControlFlowStatement) currentStmt;
+            final Expression controlFlowExpression =
+                controlFlowStatement.getControlFlowExpression();
+            // if we come from the "eval true" path on this
+            // condition
+            if (controlFlowStatement.getThenStatements().contains(previousStmt)) {
+              relevantExpressions.add(0, controlFlowExpression);
+            } else {
+              relevantExpressions.add(0, controlFlowExpression.inverse());
+            }
+            break;
+          case RETURN_STMT:
+            final Expression returnExpression = ((ReturnStatement) currentStmt).getExpression();
+            if (returnExpression.getExpressionType() == ExpressionType.METHOD_INVOCATION) {
+              relevantExpressions.add(0, returnExpression);
+            }
+            break;
+          default:
+            LOGGER.trace("Ignoring node '{}'", currentStmt);
+            break;
+        }
+        previousStmt = currentStmt;
+        currentStmt = currentStmt.getParent();
+      }
+      if (relevantExpressions.size() > 1) {
+        expressions.add(new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND,
+            relevantExpressions));
+      } else if (!relevantExpressions.isEmpty()) {
+        expressions.add(relevantExpressions.getFirst());
+      }
+
+    }
+    if (expressions.isEmpty()) {
+      return statement;
+    }
+    final Statement result = (expressions.size() > 1)
+        ? new ReturnStatement(
+            new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR, expressions))
+        : new ReturnStatement(expressions.get(0));
+    LOGGER.debug("Thinned out expression: {}", result.toString());
+    return result;
   }
 
 }

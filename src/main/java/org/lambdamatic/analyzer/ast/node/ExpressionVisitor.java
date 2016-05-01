@@ -82,7 +82,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitAssignment(final Assignment expr) {
     return true;
   }
@@ -92,7 +91,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitLambdaExpression(final LambdaExpression expr) {
     return true;
   }
@@ -102,7 +100,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitLocalVariable(final LocalVariable expr) {
     return true;
   }
@@ -112,7 +109,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitObjectValue(final ObjectInstance expr) {
     return true;
   }
@@ -122,7 +118,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitCapturedArgument(final CapturedArgument expr) {
     return true;
   }
@@ -132,7 +127,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitCapturedArgumentRef(final CapturedArgumentRef expr) {
     return true;
   }
@@ -142,7 +136,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitBooleanLiteralExpression(final BooleanLiteral expr) {
     return true;
   }
@@ -152,7 +145,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitCharacterLiteralExpression(final CharacterLiteral expr) {
     return true;
   }
@@ -162,7 +154,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitFieldAccessExpression(final FieldAccess expr) {
     return true;
   }
@@ -172,7 +163,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitCompoundExpression(final CompoundExpression expr) {
     return true;
   }
@@ -182,7 +172,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitInstanceOfExpression(final InstanceOf expr) {
     return true;
   }
@@ -192,7 +181,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitObjectVariableExpression(final ObjectInstanciation expr) {
     return true;
   }
@@ -202,7 +190,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitArrayVariableExpression(final ArrayVariable expr) {
     return true;
   }
@@ -212,7 +199,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitMethodInvocationExpression(final MethodInvocation expr) {
     return true;
   }
@@ -222,7 +208,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitNullLiteralExpression(final NullLiteral expr) {
     return true;
   }
@@ -232,7 +217,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitNumberLiteralExpression(final NumberLiteral expr) {
     return true;
   }
@@ -242,7 +226,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitStringLiteralExpression(final StringLiteral expr) {
     return true;
   }
@@ -252,7 +235,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitEnumLiteralExpression(final EnumLiteral expr) {
     return true;
   }
@@ -262,7 +244,6 @@ public abstract class ExpressionVisitor {
    * @return <code>true</code> to visit any existing child expressions, <code>false</code>
    *         otherwise. <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitClassLiteralExpression(final ClassLiteral expr) {
     return true;
   }

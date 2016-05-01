@@ -64,8 +64,7 @@ public abstract class Expression extends Node implements Comparable<Expression> 
    * @return a new synthetic ID.
    */
   protected static int generateId() {
-    final int id = sequence.incrementAndGet();
-    return id;
+    return sequence.incrementAndGet();
   }
 
   /**
@@ -248,7 +247,6 @@ public abstract class Expression extends Node implements Comparable<Expression> 
    * @return a {@link List} of {@link Expression} being all new variant forms of {@code this}
    *         expression, ordered by increasing complexity of the resulting expressions
    */
-  @SuppressWarnings("static-method")
   protected List<Expression> applyBooleanLaws(final ExpressionSimplificationMonitor monitor) {
     // does nothing
     return Collections.emptyList();
@@ -263,7 +261,7 @@ public abstract class Expression extends Node implements Comparable<Expression> 
   }
 
   @Override
-  public int compareTo(Expression other) {
+  public int compareTo(final Expression other) {
     return this.getComplexity() - other.getComplexity();
   }
 
@@ -274,7 +272,6 @@ public abstract class Expression extends Node implements Comparable<Expression> 
    * @see CompoundExpression
    * @return the complexity of the Expression. Default value is 1.
    */
-  @SuppressWarnings("static-method")
   public int getComplexity() {
     return 1;
   }
@@ -286,7 +283,6 @@ public abstract class Expression extends Node implements Comparable<Expression> 
    *         Returns {@code false} by default, since simple expression cannot be further simplified.
    *         </p>
    */
-  @SuppressWarnings("static-method")
   protected boolean canFurtherSimplify() {
     return false;
   }
@@ -299,9 +295,7 @@ public abstract class Expression extends Node implements Comparable<Expression> 
    * @return a duplicate {@link List} of the {@link Expression} arguments
    */
   public static List<Expression> duplicateExpressions(final List<Expression> sourceExpressions) {
-    return sourceExpressions.stream().map(e -> {
-      return e.duplicate();
-    }).collect(Collectors.toList());
+    return sourceExpressions.stream().map(e -> e.duplicate()).collect(Collectors.toList());
   }
 
 }

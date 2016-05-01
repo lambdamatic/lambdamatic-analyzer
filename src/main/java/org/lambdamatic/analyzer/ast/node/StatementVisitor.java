@@ -43,7 +43,6 @@ public abstract class StatementVisitor {
    * @param expressionStatement the {@link ExpressionStatement} to visit
    * @return <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitExpressionStatement(final ExpressionStatement expressionStatement) {
     return true;
   }
@@ -52,7 +51,6 @@ public abstract class StatementVisitor {
    * @param controlFlowStatement the {@link ControlFlowStatement} to visit
    * @return <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitControlFlowStatement(final ControlFlowStatement controlFlowStatement) {
     return true;
   }
@@ -61,7 +59,6 @@ public abstract class StatementVisitor {
    * @param returnStatementNode the {@link ReturnStatement} to visit
    * @return <code>true</code> by default. Can be overridden.
    */
-  @SuppressWarnings("static-method")
   public boolean visitReturnStatement(final ReturnStatement returnStatementNode) {
     return true;
   }

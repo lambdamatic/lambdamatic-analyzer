@@ -10,6 +10,9 @@ package org.lambdamatic.analyzer.ast.node;
 
 import java.lang.reflect.Field;
 
+import org.apache.commons.lang3.ClassUtils;
+import org.lambdamatic.analyzer.exception.AnalyzeException;
+
 /**
  * {@link Expression} factory.
  * 
@@ -52,18 +55,15 @@ public class ExpressionFactory {
       // value is already an array of Expression, just need to wrap it in an ArrayVariable
       if (Expression.class.isAssignableFrom(componentType)) {
         return new ArrayVariable(componentType, (Expression[]) value);
-      } else {
-        // wrap each element in an expression and add it into an ArrayVariable
-        final Object[] values = (Object[]) value;
-        final ArrayVariable arrayVariable = new ArrayVariable(componentType, values.length);
-        for (int i = 0; i < values.length; i++) {
-          arrayVariable.setElement(i, getExpression(values[i]));
-        }
-        return arrayVariable;
       }
+      // wrap each element in an expression and add it into an ArrayVariable
+      final Object[] values = (Object[]) value;
+      final ArrayVariable arrayVariable = new ArrayVariable(componentType, values.length);
+      for (int i = 0; i < values.length; i++) {
+        arrayVariable.setElement(i, getExpression(values[i]));
+      }
+      return arrayVariable;
     }
-    // throw new AnalyzeException("Unsupported element class when converting to expression: " +
-    // value.getClass().getName());
     return new ObjectInstance(value);
   }
 
@@ -78,19 +78,20 @@ public class ExpressionFactory {
   public static Expression getLiteral(final NumberLiteral numberLiteral,
       final String targetTypeName) {
     final Number value = numberLiteral.getValue();
-    if (char.class.getName().equals(targetTypeName)
-        || Character.class.getName().equals(targetTypeName)) {
-      return new CharacterLiteral((char) value.intValue());
-    } else if (boolean.class.getName().equals(targetTypeName)
-        || Boolean.class.getName().equals(targetTypeName)) {
-      switch (value.intValue()) {
-        case 0:
+    try {
+      final Class<?> targetClass = ClassUtils.getClass(targetTypeName);
+      if (targetClass.equals(Character.class) || targetClass.equals(char.class)) {
+        return new CharacterLiteral((char) value.intValue());
+      } else if (targetClass.equals(boolean.class) || targetClass.equals(Boolean.class)) {
+        if (value.intValue() == 0) {
           return new BooleanLiteral(false);
-        default:
-          return new BooleanLiteral(true);
+        }
+        return new BooleanLiteral(true);
       }
+      return numberLiteral;
+    } catch (final ClassNotFoundException e) {
+      throw new AnalyzeException("Failed to retrieve class with name " + targetTypeName, e);
     }
-    return numberLiteral;
   }
 
 }
