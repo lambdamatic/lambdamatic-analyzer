@@ -199,9 +199,8 @@ public class MethodInvocation extends ComplexExpression {
   public Object getValue() {
     if (this.source.getExpressionType() == ExpressionType.CLASS_LITERAL) {
       return evaluate();
-    } else {
-      return evaluate();
     }
+    return evaluate();
   }
 
   @Override

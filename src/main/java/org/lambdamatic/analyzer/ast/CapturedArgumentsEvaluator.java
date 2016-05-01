@@ -25,7 +25,6 @@ import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
-import org.lambdamatic.analyzer.ast.node.ObjectInstance;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,11 +61,6 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
     capturedArgumentRef.getParent().replaceElement(capturedArgumentRef, replacement);
     // no need to process further
     return false;
-  }
-
-  @Override
-  public boolean visitObjectValue(ObjectInstance expr) {
-    return super.visitObjectValue(expr);
   }
 
   @Override
@@ -120,9 +114,6 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
     lambdaExpression.getBody().stream()
         .forEach(s -> s.accept(new StatementExpressionsDelegateVisitor(
             new CapturedArgumentsEvaluator(this.capturedArgs))));
-    // final ComplexExpression parentExpression = lambdaExpression.getParent();
-    // parentExpression.replaceElement(lambdaExpression, new LambdaExpression(evaluatedExpression,
-    // lambdaExpression.getArgumentType(), lambdaExpression.getArgumentName()));
     // no need to further visit this expression.
     return false;
   }

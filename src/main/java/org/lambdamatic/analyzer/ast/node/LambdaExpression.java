@@ -189,7 +189,7 @@ public class LambdaExpression extends Expression {
       if (other.argumentType != null) {
         return false;
       }
-    } else if (!this.argumentType.getName().equals(other.argumentType.getName())) {
+    } else if (!this.argumentType.equals(other.argumentType)) {
       return false;
     }
     if (this.argumentName == null) {

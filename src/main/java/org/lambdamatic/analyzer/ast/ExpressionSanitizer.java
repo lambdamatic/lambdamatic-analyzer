@@ -148,8 +148,10 @@ public class ExpressionSanitizer extends ExpressionVisitor {
   static class MethodMatcher {
     /** the type of the element on which the method is called. */
     private final Class<?> sourceType;
+    
     /** the name of the method. */
     private final String methodName;
+    
     /** the type of the arguments of this method. */
     private final Class<?>[] argumentTypes;
 
