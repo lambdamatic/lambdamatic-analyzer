@@ -11,6 +11,7 @@
 package org.lambdamatic.testutils;
 
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -29,12 +30,8 @@ import com.sample.model.TestPojo;
  */
 public class JavaMethods {
 
-  public static Method Object_equals;
-
   public static Method TestPojo_elementMatch;
-
-  public static Method ArrayUtil_toArray;
-
+  
   public static Method TestPojo_getStringValue;
 
   public static Method TestPojo_getPrimitiveBooleanValue;
@@ -85,9 +82,19 @@ public class JavaMethods {
   
   public static Method Character_valueOf;
   
+  public static Method Object_equals;
+  
+  public static Method Object_notify;
+  
+  public static Method Date_getTime;
+  
+  public static Method ArrayUtil_toArray;
+  
   static {
     try {
       Object_equals = Object.class.getMethod("equals", Object.class);
+      Object_notify = Object.class.getMethod("notify");
+      Date_getTime = Date.class.getMethod("getTime");
       TestPojo_elementMatch = TestPojo.class.getMethod("elementMatch", SerializablePredicate.class);
       ArrayUtil_toArray = ArrayUtil.class.getMethod("toArray", Object[].class);
       TestPojo_getStringValue = TestPojo.class.getMethod("getStringValue");
@@ -115,7 +122,7 @@ public class JavaMethods {
       List_get = List.class.getMethod("get", int.class);
       Map_get = Map.class.getMethod("get", Object.class);
       Character_valueOf = Character.class.getMethod("valueOf", char.class);
-
+      
     } catch (NoSuchMethodException | SecurityException e) {
       e.printStackTrace();
       Assert.fail("Failed to retrieve Java method");

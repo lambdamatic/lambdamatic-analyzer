@@ -153,14 +153,15 @@ public class LambdaExpressionReader {
 
   /**
    * Reads the given {@link List} of (bytecode) {@link AbstractInsnNode} located at the known
-   * {@link SerializedLambdaInfo} and computes a simplified {@link Statement} based tree
+   * {@link SerializedLambdaInfo} and computes a simplified list of {@link Statement} based tree
    * representing the initial lambda expression.
    * 
    * @param lambdaInfo the info about the Lambda expression synthetic implementation
-   * @return the {@link List} of {@link Statement} found while reading the bytecode
+   * @return the {@link List} of {@link Statement} found while reading the bytecode along with the
+   *         arguments passed to the Lambda Expression
    * @throws IOException if a problem occurred while reading the underlying {@link Class}
    */
-  public Pair<List<Statement>, List<LocalVariable>> readBytecodeStatement(
+  public Pair<List<Statement>, List<LocalVariable>> readBytecodeStatements(
       final SerializedLambdaInfo lambdaInfo) throws IOException {
     final LambdaExpressionClassVisitor desugaredExpressionVisitor =
         new LambdaExpressionClassVisitor(lambdaInfo);
@@ -189,55 +190,62 @@ public class LambdaExpressionReader {
    * there is no further instruction to proceed. It is the responsability of the caller to set the
    * cursor position.
    * 
-   * @param insnCursor the instruction cursor used to read the bytecode.
-   * @param expressionLinkedList the expression stack to put on or pop from.
+   * @param insnCursor the instruction cursor used to read the bytecode
+   * @param operandStack the expression stack to put on or pop from
    * @param localVariables the local variables
    * @return a {@link List} of {@link Statement} containing the {@link Statement}
    */
   private List<Statement> readStatements(final InsnCursor insnCursor,
-      final LinkedList<Expression> expressionLinkedList,
+      final LinkedList<Expression> operandStack,
       final List<CapturedArgument> capturedArguments, final LocalVariables localVariables) {
     final List<Statement> statements = new ArrayList<>();
     while (insnCursor.hasCurrent()) {
       final AbstractInsnNode currentInstruction = insnCursor.getCurrent();
       switch (currentInstruction.getType()) {
         case AbstractInsnNode.VAR_INSN:
-          readVariableInstructionNode(expressionLinkedList, capturedArguments, localVariables,
+          readVariableInstructionNode(operandStack, capturedArguments, localVariables,
               (VarInsnNode) currentInstruction);
           break;
         case AbstractInsnNode.LDC_INSN:
           final LdcInsnNode ldcInsnNode = (LdcInsnNode) currentInstruction;
-          readLdcInstructionNode(expressionLinkedList, ldcInsnNode);
+          readLdcInstructionNode(operandStack, ldcInsnNode);
           break;
         case AbstractInsnNode.FIELD_INSN:
           final FieldInsnNode fieldInsnNode = (FieldInsnNode) currentInstruction;
-          readFieldInstructionNode(expressionLinkedList, statements, fieldInsnNode);
+          readFieldInstructionNode(operandStack, statements, fieldInsnNode);
           break;
         case AbstractInsnNode.METHOD_INSN:
           final MethodInsnNode methodInsnNode = (MethodInsnNode) currentInstruction;
-          readMethodInstructionNode(insnCursor, expressionLinkedList, methodInsnNode);
+          final Statement methodInvocationStatement =
+              readMethodInstructionNode(insnCursor, operandStack, methodInsnNode);
+          if (methodInvocationStatement != null) {
+            statements.add(methodInvocationStatement);
+          }
           break;
         case AbstractInsnNode.INVOKE_DYNAMIC_INSN:
           final InvokeDynamicInsnNode invokeDynamicInsnNode =
               (InvokeDynamicInsnNode) currentInstruction;
-          readInvokeDynamicInstructionNode(expressionLinkedList, capturedArguments,
-              invokeDynamicInsnNode);
+          final Statement methodInkeDynamicStatement = readInvokeDynamicInstructionNode(
+              operandStack, capturedArguments, invokeDynamicInsnNode);
+          if (methodInkeDynamicStatement != null) {
+            statements.add(methodInkeDynamicStatement);
+          }
           break;
         case AbstractInsnNode.JUMP_INSN:
-          statements.addAll(readJumpInstruction(insnCursor, expressionLinkedList, capturedArguments,
+          statements.addAll(readJumpInstruction(insnCursor, operandStack, capturedArguments,
               localVariables));
           return statements;
         case AbstractInsnNode.INT_INSN:
-          readIntInstruction((IntInsnNode) currentInstruction, expressionLinkedList,
+          readIntInstruction((IntInsnNode) currentInstruction, operandStack,
               localVariables);
           break;
         case AbstractInsnNode.INSN:
           final List<Statement> instructionStatement =
-              readInstruction(insnCursor, expressionLinkedList, capturedArguments, localVariables);
+              readInstruction(insnCursor, operandStack, capturedArguments, localVariables);
           statements.addAll(instructionStatement);
           break;
         case AbstractInsnNode.TYPE_INSN:
-          readTypeInstruction((TypeInsnNode) currentInstruction, expressionLinkedList);
+          readTypeInstruction((TypeInsnNode) currentInstruction, operandStack);
           break;
         default:
           throw new AnalyzeException(
@@ -250,18 +258,21 @@ public class LambdaExpressionReader {
   }
 
   /**
-   * Reads the given {@link MethodInsnNode}
-   * @param insnCursor
-   * @param expressionLinkedList
-   * @param methodInsnNode
+   * Reads the given {@link MethodInsnNode}.
+   * @param insnCursor the instruction cursor used to read the bytecode
+   * @param operandStack the pile of {@link Expression}
+   * @param methodInsnNode the {@link MethodInsnNode} to read
+   * @return an {@link ExpressionStatement} if the inked method returned <code>null</code>,
+   *         <code>null</code> otherwise (the invoked method is put on top of the given
+   *         {@code operandStack}).
    */
-  private static void readMethodInstructionNode(final InsnCursor insnCursor,
-      final LinkedList<Expression> expressionLinkedList, final MethodInsnNode methodInsnNode) {
+  private static Statement readMethodInstructionNode(final InsnCursor insnCursor,
+      final LinkedList<Expression> operandStack, final MethodInsnNode methodInsnNode) {
     final Type[] argumentTypes = Type.getArgumentTypes(methodInsnNode.desc);
     final List<Expression> args = new ArrayList<>();
     final List<Class<?>> parameterTypes = new ArrayList<>();
     Stream.of(argumentTypes).forEach(argumentType -> {
-      final Expression arg = expressionLinkedList.pollLast();
+      final Expression arg = operandStack.pollLast();
       final String argumentClassName = argumentType.getClassName();
       args.add(castOperand(arg, argumentClassName));
       try {
@@ -276,13 +287,11 @@ public class LambdaExpressionReader {
       case Opcodes.INVOKEINTERFACE:
       case Opcodes.INVOKEVIRTUAL:
       case Opcodes.INVOKESPECIAL:
-        readInvokeSpecialInstructionNode(insnCursor, expressionLinkedList, methodInsnNode,
+        return readInvokeMethod(insnCursor, operandStack, methodInsnNode,
             args, parameterTypes);
-        break;
       case Opcodes.INVOKESTATIC:
-        readInvokeStaticInstructionNode(insnCursor, expressionLinkedList, methodInsnNode,
+        return readInvokeStaticMethod(insnCursor, operandStack, methodInsnNode,
             args, parameterTypes);
-        break;
       default:
         throw new AnalyzeException(
             "Unexpected method invocation type: " + methodInsnNode.getOpcode());
@@ -290,14 +299,19 @@ public class LambdaExpressionReader {
   }
 
   /**
-   * @param insnCursor
-   * @param expressionLinkedList
-   * @param methodInsnNode
-   * @param args
-   * @param parameterTypes
+   * Reads the given {@link MethodInsnNode}.
+   * 
+   * @param insnCursor the instruction cursor.
+   * @param operandStack the pile of {@link Expression}
+   * @param methodInsnNode the {@link MethodInsnNode} to read
+   * @param args the arguments passed to the method
+   * @param parameterTypes the types of parameters of the called method
+   * @return an {@link ExpressionStatement} if the inked method returned <code>null</code>,
+   *         <code>null</code> otherwise (the invoked method is put on top of the given
+   *         {@code operandStack}).
    */
-  private static void readInvokeStaticInstructionNode(final InsnCursor insnCursor,
-      final LinkedList<Expression> expressionLinkedList, final MethodInsnNode methodInsnNode,
+  private static Statement readInvokeStaticMethod(final InsnCursor insnCursor,
+      final LinkedList<Expression> operandStack, final MethodInsnNode methodInsnNode,
       final List<Expression> args, final List<Class<?>> parameterTypes) {
     final Type type = Type.getObjectType(methodInsnNode.owner);
     try {
@@ -307,7 +321,11 @@ public class LambdaExpressionReader {
       final Class<?> returnType = findReturnType(insnCursor, javaMethod);
       final MethodInvocation invokedStaticMethod = new MethodInvocation(
           new ClassLiteral(sourceClass), javaMethod, returnType, args);
-      expressionLinkedList.add(invokedStaticMethod);
+      if (returnType.equals(void.class) || returnType.equals(Void.class)) {
+        return new ExpressionStatement(invokedStaticMethod);
+      }
+      operandStack.add(invokedStaticMethod);
+      return null;
     } catch (ClassNotFoundException e) {
       throw new AnalyzeException("Failed to retrieve class for " + methodInsnNode.owner,
           e);
@@ -315,44 +333,55 @@ public class LambdaExpressionReader {
   }
 
   /**
-   * @param insnCursor
-   * @param expressionLinkedList
-   * @param methodInsnNode
-   * @param args
-   * @param parameterTypes
+   * Reads the {@code invoke special} {@link MethodInsnNode}.
+   * @param insnCursor the instruction cursor used to read the bytecode.
+   * @param operandStack the pile of {@link Expression}
+   * @param methodInsnNode the {@link MethodInsnNode} to read
+   * @param args the arguments passed to the method
+   * @param parameterTypes the types of parameters of the called method
+   * @return an {@link ExpressionStatement} if the inked method returned <code>null</code>,
+   *         <code>null</code> otherwise (the invoked method is put on top of the given
+   *         {@code operandStack}).
    */
-  private static void readInvokeSpecialInstructionNode(final InsnCursor insnCursor,
-      final LinkedList<Expression> expressionLinkedList, final MethodInsnNode methodInsnNode,
+  private static Statement readInvokeMethod(final InsnCursor insnCursor,
+      final LinkedList<Expression> operandStack, final MethodInsnNode methodInsnNode,
       final List<Expression> args, final List<Class<?>> parameterTypes) {
     // object instantiation
     if ("<init>".equals(methodInsnNode.name)) {
       final ObjectInstanciation objectVariable =
-          (ObjectInstanciation) expressionLinkedList.pollLast();
+          (ObjectInstanciation) operandStack.pollLast();
       objectVariable.setInitArguments(args);
     } else {
-      final Expression sourceExpression = expressionLinkedList.pollLast();
+      final Expression sourceExpression = operandStack.pollLast();
       final Method javaMethod = ReflectionUtils.findJavaMethod(
           sourceExpression.getJavaType(), methodInsnNode.name, parameterTypes);
       final Class<?> returnType = findReturnType(insnCursor, javaMethod);
       final MethodInvocation invokedMethod =
           new MethodInvocation(sourceExpression, javaMethod, returnType, args);
-      expressionLinkedList.add(invokedMethod);
+      // if the method returns 'void', we can convert the method invocation into a statement
+      if (returnType.equals(void.class) || returnType.equals(Void.class)) {
+        return new ExpressionStatement(invokedMethod);
+      }
+      // otherwise, the method invocation 'result' returns to the operand stack
+      operandStack.add(invokedMethod);
     }
+    return null;
   }
 
   /**
-   * @param expressionLinkedList
-   * @param capturedArguments
-   * @param invokeDynamicInsnNode
+   * Reads the {@link InvokeDynamicInsnNode}.
+   * @param operandStack the pile of {@link Expression}
+   * @param capturedArguments the captured arguments passed to the method
+   * @param invokeDynamicInsnNode the {@link InvokeDynamicInsnNode} to read
    */
-  private static void readInvokeDynamicInstructionNode(final LinkedList<Expression> expressionLinkedList,
+  private static Statement readInvokeDynamicInstructionNode(final LinkedList<Expression> operandStack,
       final List<CapturedArgument> capturedArguments,
       final InvokeDynamicInsnNode invokeDynamicInsnNode) {
     final Handle handle = (Handle) invokeDynamicInsnNode.bsmArgs[1];
     final int argNumber = Type.getArgumentTypes(invokeDynamicInsnNode.desc).length;
     final List<CapturedArgumentRef> lambdaArgs = new ArrayList<>();
     for (int i = 0; i < argNumber; i++) {
-      final Expression expr = expressionLinkedList.pollLast();
+      final Expression expr = operandStack.pollLast();
       if (expr.getExpressionType() != ExpressionType.CAPTURED_ARGUMENT_REF) {
         throw new AnalyzeException(
             "Unexpected argument type when following InvokeDynamic call: "
@@ -365,48 +394,51 @@ public class LambdaExpressionReader {
         handle.getOwner(), handle.getName(), handle.getDesc(), lambdaArgs, capturedArguments);
     final LambdaExpression lambdaExpression =
         LambdaExpressionAnalyzer.getInstance().analyzeExpression(lambdaInfo);
-    expressionLinkedList.add(lambdaExpression);
+    operandStack.add(lambdaExpression);
+    return null;
   }
 
   /**
-   * @param expressionLinkedList
-   * @param ldcInsnNode
+   * Reads the given {@link LdcInsnNode}.
+   * @param operandStack the pile of {@link Expression}
+   * @param ldcInsnNode the instruction to read.
    */
-  private static void readLdcInstructionNode(final LinkedList<Expression> expressionLinkedList,
+  private static void readLdcInstructionNode(final LinkedList<Expression> operandStack,
       final LdcInsnNode ldcInsnNode) {
     // let's move this instruction on top of the stack until it
     // is used as an argument during a method call
     final Expression constant = ExpressionFactory.getExpression(ldcInsnNode.cst);
-    LOGGER.trace("LinkedListing constant {}", constant);
-    expressionLinkedList.add(constant);
+    LOGGER.trace("Adding constant {}", constant);
+    operandStack.add(constant);
   }
 
   /**
-   * @param expressionLinkedList
-   * @param statements
-   * @param fieldInsnNode
+   * Reads the {@link FieldInsnNode}.
+   * @param operandStack the pile of {@link Expression}
+   * @param statementPile the pile of {@link Statement}
+   * @param fieldInsnNode the {@link FieldInsnNode} to read
    */
-  private static void readFieldInstructionNode(final LinkedList<Expression> expressionLinkedList,
-      final List<Statement> statements, final FieldInsnNode fieldInsnNode) {
+  private static void readFieldInstructionNode(final LinkedList<Expression> operandStack,
+      final List<Statement> statementPile, final FieldInsnNode fieldInsnNode) {
     switch (fieldInsnNode.getOpcode()) {
       case Opcodes.GETSTATIC:
         final Type ownerType = Type.getType(fieldInsnNode.desc);
         final FieldAccess staticFieldAccess =
             new FieldAccess(new ClassLiteral(getType(ownerType)), fieldInsnNode.name);
-        expressionLinkedList.add(staticFieldAccess);
+        operandStack.add(staticFieldAccess);
         break;
       case Opcodes.GETFIELD:
-        final Expression fieldAccessParent = expressionLinkedList.pollLast();
+        final Expression fieldAccessParent = operandStack.pollLast();
         final FieldAccess fieldAccess =
             new FieldAccess(fieldAccessParent, fieldInsnNode.name);
-        expressionLinkedList.add(fieldAccess);
+        operandStack.add(fieldAccess);
         break;
       case Opcodes.PUTFIELD:
-        final Expression fieldAssignationValue = expressionLinkedList.pollLast();
-        final Expression parentSource = expressionLinkedList.pollLast();
+        final Expression fieldAssignationValue = operandStack.pollLast();
+        final Expression parentSource = operandStack.pollLast();
         final FieldAccess source = new FieldAccess(parentSource, fieldInsnNode.name);
         final Assignment assignmentExpression = new Assignment(source, fieldAssignationValue);
-        statements.add(new ExpressionStatement(assignmentExpression));
+        statementPile.add(new ExpressionStatement(assignmentExpression));
         break;
       default:
         throw new AnalyzeException(
@@ -417,12 +449,12 @@ public class LambdaExpressionReader {
 
   /**
    * Reads the variable instruction.
-   * @param expressionLinkedList the expression stack to put on or pop from.
-   * @param capturedArguments the captured argument references, if any.
-   * @param localVariables the local variables.
-   * @param varInstruction the 'variable instruction' to process.
+   * @param operandStack the expression stack to put on or pop from
+   * @param capturedArguments the captured argument references, if any
+   * @param localVariables the local variables
+   * @param varInstruction the 'variable instruction' to process
    */
-  private static void readVariableInstructionNode(final LinkedList<Expression> expressionLinkedList,
+  private static void readVariableInstructionNode(final LinkedList<Expression> operandStack,
       final List<CapturedArgument> capturedArguments, final LocalVariables localVariables,
       final VarInsnNode varInstruction) {
     switch (varInstruction.getOpcode()) {
@@ -443,11 +475,11 @@ public class LambdaExpressionReader {
               capturedArgumentValue != null ? capturedArgumentValue.getClass() : Object.class;
           final CapturedArgumentRef capturedArgumentRef =
               new CapturedArgumentRef(varInstruction.var, capturedArgumentValueType);
-          expressionLinkedList.add(capturedArgumentRef);
+          operandStack.add(capturedArgumentRef);
         } else {
           // the variable index matches a local variable
           final LocalVariableNode var = localVariables.load(varInstruction.var);
-          expressionLinkedList.add(new LocalVariable(var.index, var.name, readSignature(var.desc)));
+          operandStack.add(new LocalVariable(var.index, var.name, readSignature(var.desc)));
         }
         break;
       case Opcodes.ASTORE:
@@ -559,15 +591,15 @@ public class LambdaExpressionReader {
    * given Expression {@link LinkedList}).
    * 
    * @param insnNode the instruction to read
-   * @param expressionLinkedList the expression stack to put on or pop from.
+   * @param operandStack the expression stack to put on or pop from
    * @param localVariables the local variables
    * @return a {@link List} of {@link Statement} or empty list if no {@link Statement} was created
-   *         after reading the current instruction.
+   *         after reading the current instruction
    * @see <a href="https://en.wikipedia.org/wiki/Java_bytecode_instruction_listings">Java bytcode
    *      instruction listings on Wikipedia</a>
    */
   private List<Statement> readInstruction(final InsnCursor insnCursor,
-      final LinkedList<Expression> expressionLinkedList,
+      final LinkedList<Expression> operandStack,
       final List<CapturedArgument> capturedArguments, final LocalVariables localVariables) {
     final List<Statement> statements = new ArrayList<>();
     final AbstractInsnNode insnNode = insnCursor.getCurrent();
@@ -576,73 +608,73 @@ public class LambdaExpressionReader {
       case Opcodes.ARETURN:
         // return an integer from a method
       case Opcodes.IRETURN:
-        statements.add(new ReturnStatement(expressionLinkedList.pollLast()));
+        statements.add(new ReturnStatement(operandStack.pollLast()));
         break;
       // return void from method
       case Opcodes.RETURN:
         // wrap all pending expressions into ExpressionStatements
-        while (!expressionLinkedList.isEmpty()) {
-          final Expression pendingExpression = expressionLinkedList.pollLast();
+        while (!operandStack.isEmpty()) {
+          final Expression pendingExpression = operandStack.pollLast();
           statements.add(new ExpressionStatement(pendingExpression));
         }
         break;
       // push a null reference onto the stack
       case Opcodes.ACONST_NULL:
-        expressionLinkedList.add(new NullLiteral());
+        operandStack.add(new NullLiteral());
         break;
       // load the int value 0 onto the stack
       case Opcodes.ICONST_0:
         // applies for byte, short, int and boolean
-        expressionLinkedList.add(new NumberLiteral(0));
+        operandStack.add(new NumberLiteral(0));
         break;
       // load the int value 1 onto the stack
       case Opcodes.ICONST_1:
         // applies for byte, short, int and boolean
-        expressionLinkedList.add(new NumberLiteral(1));
+        operandStack.add(new NumberLiteral(1));
         break;
       // load the int value 2 onto the stack
       case Opcodes.ICONST_2:
-        expressionLinkedList.add(new NumberLiteral(2));
+        operandStack.add(new NumberLiteral(2));
         break;
       // load the int value 3 onto the stack
       case Opcodes.ICONST_3:
-        expressionLinkedList.add(new NumberLiteral(3));
+        operandStack.add(new NumberLiteral(3));
         break;
       // load the int value 4 onto the stack
       case Opcodes.ICONST_4:
-        expressionLinkedList.add(new NumberLiteral(4));
+        operandStack.add(new NumberLiteral(4));
         break;
       // load the int value 5 onto the stack
       case Opcodes.ICONST_5:
-        expressionLinkedList.add(new NumberLiteral(5));
+        operandStack.add(new NumberLiteral(5));
         break;
       // push the long 0 onto the stack
       case Opcodes.LCONST_0:
-        expressionLinkedList.add(new NumberLiteral(0L));
+        operandStack.add(new NumberLiteral(0L));
         break;
       // push the long 1 onto the stack
       case Opcodes.LCONST_1:
-        expressionLinkedList.add(new NumberLiteral(1L));
+        operandStack.add(new NumberLiteral(1L));
         break;
       // push the 0.0f onto the stack
       case Opcodes.FCONST_0:
-        expressionLinkedList.add(new NumberLiteral(0f));
+        operandStack.add(new NumberLiteral(0f));
         break;
       // push the 1.0f onto the stack
       case Opcodes.FCONST_1:
-        expressionLinkedList.add(new NumberLiteral(1f));
+        operandStack.add(new NumberLiteral(1f));
         break;
       // push the 2.0f onto the stack
       case Opcodes.FCONST_2:
-        expressionLinkedList.add(new NumberLiteral(2f));
+        operandStack.add(new NumberLiteral(2f));
         break;
       // push the constant 0.0 onto the stack
       case Opcodes.DCONST_0:
-        expressionLinkedList.add(new NumberLiteral(0d));
+        operandStack.add(new NumberLiteral(0d));
         break;
       // push the constant 1.0 onto the stack
       case Opcodes.DCONST_1:
-        expressionLinkedList.add(new NumberLiteral(1d));
+        operandStack.add(new NumberLiteral(1d));
         break;
       // compare two longs values
       case Opcodes.LCMP:
@@ -654,44 +686,46 @@ public class LambdaExpressionReader {
       case Opcodes.FCMPL:
         // compare two floats
       case Opcodes.FCMPG:
-        statements.addAll(readJumpInstruction(insnCursor.next(), expressionLinkedList,
+        statements.addAll(readJumpInstruction(insnCursor.next(), operandStack,
             capturedArguments, localVariables));
         break;
       // add 2 ints
       case Opcodes.IADD:
-        expressionLinkedList.add(readOperation(Operator.ADD, expressionLinkedList));
+        operandStack.add(readOperation(Operator.ADD, operandStack));
         break;
       // int subtract
       case Opcodes.ISUB:
-        expressionLinkedList.add(readOperation(Operator.SUBTRACT, expressionLinkedList));
+        operandStack.add(readOperation(Operator.SUBTRACT, operandStack));
         break;
       // multiply 2 integers
       case Opcodes.IMUL:
-        expressionLinkedList.add(readOperation(Operator.MULTIPLY, expressionLinkedList));
+        operandStack.add(readOperation(Operator.MULTIPLY, operandStack));
         break;
       // divide 2 integers
       case Opcodes.IDIV:
-        expressionLinkedList.add(readOperation(Operator.DIVIDE, expressionLinkedList));
+        operandStack.add(readOperation(Operator.DIVIDE, operandStack));
         break;
       // negate int
       case Opcodes.INEG:
-        expressionLinkedList.add(inverseInteger(expressionLinkedList));
+        operandStack.add(inverseInteger(operandStack));
         break;
       // discard the top value on the stack
       case Opcodes.POP:
-        statements.add(new ExpressionStatement(expressionLinkedList.pollLast()));
+      case Opcodes.POP2:
+        //statements.add(new ExpressionStatement(operandStack.pollLast()));
+        LOGGER.trace("Ignoring POP/POP2 instruction");
         break;
       // duplicate the value on top of the stack
       case Opcodes.DUP:
-        expressionLinkedList.add(expressionLinkedList.peekLast());
+        operandStack.add(operandStack.peekLast());
         break;
       // insert a copy of the top value into the stack two values from the top.
       case Opcodes.DUP_X1:
-        expressionLinkedList.add(expressionLinkedList.size() - 2, expressionLinkedList.peekLast());
+        operandStack.add(operandStack.size() - 2, operandStack.peekLast());
         break;
       // store into a reference in an array
       case Opcodes.AASTORE:
-        readArrayStoreInstruction(expressionLinkedList);
+        readArrayStoreInstruction(operandStack);
         break;
       // converts Float to Double -> ignored.
       case Opcodes.F2D:
@@ -705,17 +739,17 @@ public class LambdaExpressionReader {
 
   /**
    * Reads the {@link Operation} using the given <code>operator</code> and the 2 top-most elements
-   * in the given <code>expressionLinkedList</code>.
+   * in the given <code>operandStack</code>.
    * 
    * @param operator the Operation {@link Operator}
-   * @param expressionLinkedList the stack of {@link Expression} from which to take the operands
+   * @param operandStack the stack of {@link Expression} from which to take the operands
    * @return the result {@link Operation}
    * 
    */
   private static Operation readOperation(final Operator operator,
-      final LinkedList<Expression> expressionLinkedList) {
-    final Expression rightOperand = expressionLinkedList.pollLast();
-    final Expression leftOperand = expressionLinkedList.pollLast();
+      final LinkedList<Expression> operandStack) {
+    final Expression rightOperand = operandStack.pollLast();
+    final Expression leftOperand = operandStack.pollLast();
     return new Operation(operator, leftOperand, rightOperand);
   }
 
@@ -723,13 +757,13 @@ public class LambdaExpressionReader {
    * Takes the first {@link Expression} from the given {@link LinkedList}, assuming it is a
    * {@link NumberLiteral}, and returns a new {@link NumberLiteral} with its negated value.
    * 
-   * @param expressionLinkedList the stack of {@link Expression} from which to take the operand
+   * @param operandStack the stack of {@link Expression} from which to take the operand
    * @return the result
    * @throws AnalyzeException if the operand is not {@link NumberLiteral}
    * 
    */
-  private static NumberLiteral inverseInteger(final LinkedList<Expression> expressionLinkedList) {
-    final Expression operand = expressionLinkedList.pollLast();
+  private static NumberLiteral inverseInteger(final LinkedList<Expression> operandStack) {
+    final Expression operand = operandStack.pollLast();
     try {
       final Number value = ((NumberLiteral) operand).getValue();
       return new NumberLiteral(-value.intValue());
@@ -780,15 +814,15 @@ public class LambdaExpressionReader {
    * the given {@link LinkedList}.
    * 
    * @param intInsnNode the instruction to read
-   * @param expressionLinkedList the expression stack to put on or pop from.
+   * @param operandStack the expression stack to put on or pop from
    * @param localVariables the local variables
    */
   private static void readIntInstruction(final IntInsnNode intInsnNode,
-      final LinkedList<Expression> expressionLinkedList, final LocalVariables localVariables) {
+      final LinkedList<Expression> operandStack, final LocalVariables localVariables) {
     if (intInsnNode.getOpcode() == Opcodes.BIPUSH) {
       final Expression literal = new NumberLiteral(intInsnNode.operand);
-      LOGGER.trace("LinkedListing literal {}", literal);
-      expressionLinkedList.add(literal);
+      LOGGER.trace("Adding literal {}", literal);
+      operandStack.add(literal);
     } else {
       LOGGER.warn("IntInsnNode with OpCode {} was ignored.", intInsnNode.getOpcode());
     }
@@ -803,13 +837,13 @@ public class LambdaExpressionReader {
    * 
    * 
    * @param instructionCursor the cursor for the current instruction to read
-   * @param expressionLinkedList the stack of Expressions
+   * @param operandStack the stack of Expressions
    * @param capturedArguments the captured arguments
    * @param localVariables the local variables
    * @return the list of statements read from the jump instruction
    */
   private List<Statement> readJumpInstruction(final InsnCursor instructionCursor,
-      final LinkedList<Expression> expressionLinkedList,
+      final LinkedList<Expression> operandStack,
       final List<CapturedArgument> capturedArguments, final LocalVariables localVariables) {
     final JumpInsnNode jumpInsnNode = (JumpInsnNode) instructionCursor.getCurrent();
     final LabelNode jumpLabel = jumpInsnNode.label;
@@ -833,12 +867,12 @@ public class LambdaExpressionReader {
       case Opcodes.IF_ICMPGT:
       case Opcodes.IF_ACMPEQ:
       case Opcodes.IF_ACMPNE:
-        return Arrays.asList(buildControlFlowStatement(instructionCursor, expressionLinkedList,
+        return Arrays.asList(buildControlFlowStatement(instructionCursor, operandStack,
             capturedArguments, localVariables));
       case Opcodes.GOTO:
         final InsnCursor jumpInstructionCursor = instructionCursor.duplicate();
         jumpInstructionCursor.move(jumpLabel.getLabel());
-        return readStatements(jumpInstructionCursor, expressionLinkedList, capturedArguments,
+        return readStatements(jumpInstructionCursor, operandStack, capturedArguments,
             localVariables);
       default:
         throw new AnalyzeException("Unexpected JumpInsnNode OpCode: " + jumpInsnNode.getOpcode());
@@ -849,17 +883,17 @@ public class LambdaExpressionReader {
    * Builds a {@link ControlFlowStatement} from the given elements
    * 
    * @param insnCursor the InsnCursor to read the execution branches
-   * @param expressionLinkedList the stack of expressions waiting to be used
+   * @param operandStack the stack of expressions waiting to be used
    * @param capturedArguments the captured argument references, if any
    * @param localVariables the local variables, if any
    * @return an {@link ControlFlowStatement}.
    */
   private Statement buildControlFlowStatement(final InsnCursor insnCursor,
-      final LinkedList<Expression> expressionLinkedList,
+      final LinkedList<Expression> operandStack,
       final List<CapturedArgument> capturedArguments, final LocalVariables localVariables) {
     final JumpInsnNode jumpInsnNode = (JumpInsnNode) insnCursor.getCurrent();
     final Expression comparisonExpression =
-        getControlFlowExpression(jumpInsnNode, expressionLinkedList);
+        getControlFlowExpression(jumpInsnNode, operandStack);
     final LabelNode jumpLabel = jumpInsnNode.label;
     final InsnCursor thenInstructionCursor = insnCursor;
     final InsnCursor elseInstructionCursor = insnCursor.duplicate().next();
@@ -878,16 +912,16 @@ public class LambdaExpressionReader {
    * {@link AbstractInsnNode}.
    * 
    * @param jumpInsnNode the instruction
-   * @param expressionLinkedList the stack of expressions
+   * @param operandStack the stack of expressions
    * @return the comparison expression (can be an {@link CompoundExpression} or some other form of
    *         type of {@link Expression} that return a Boolean value)
    */
   private static Expression getControlFlowExpression(final JumpInsnNode jumpInsnNode,
-      final LinkedList<Expression> expressionLinkedList) {
+      final LinkedList<Expression> operandStack) {
     final CompoundExpressionOperator comparisonOperator = extractComparisonOperator(jumpInsnNode);
-    final Expression rightSideOperand = expressionLinkedList.pollLast();
-    final Expression leftSideOperand = expressionLinkedList.isEmpty()
-        ? getDefaultComparisonOperand(rightSideOperand) : expressionLinkedList.pollLast();
+    final Expression rightSideOperand = operandStack.pollLast();
+    final Expression leftSideOperand = operandStack.isEmpty()
+        ? getDefaultComparisonOperand(rightSideOperand) : operandStack.pollLast();
     if (leftSideOperand.equals(new BooleanLiteral(false))) {
       switch (comparisonOperator) {
         case EQUALS:
@@ -983,22 +1017,22 @@ public class LambdaExpressionReader {
    * Reads the given {@link TypeInsnNode} instruction.
    * 
    * @param typeInsnNode the instruction to read
-   * @param expressionLinkedList the expression stack to put on or pop from.
+   * @param operandStack the expression stack to put on or pop from.
    * @param localVariables the local variables
    */
   private static void readTypeInstruction(final TypeInsnNode typeInsnNode,
-      final LinkedList<Expression> expressionLinkedList) {
+      final LinkedList<Expression> operandStack) {
     final Type instanceType = Type.getObjectType(typeInsnNode.desc);
     switch (typeInsnNode.getOpcode()) {
       case Opcodes.NEW:
         final ObjectInstanciation objectVariable = new ObjectInstanciation(getType(instanceType));
-        expressionLinkedList.add(objectVariable);
+        operandStack.add(objectVariable);
         break;
       case Opcodes.ANEWARRAY:
-        final NumberLiteral arrayLength = (NumberLiteral) expressionLinkedList.pollLast();
+        final NumberLiteral arrayLength = (NumberLiteral) operandStack.pollLast();
         final ArrayVariable arrayVariable = new ArrayVariable(
             getArrayType(instanceType), arrayLength.getValue().intValue());
-        expressionLinkedList.add(arrayVariable);
+        operandStack.add(arrayVariable);
         break;
       default:
         LOGGER.warn("TypeInsnNode with OpCode {} was ignored.", typeInsnNode.getOpcode());
@@ -1007,14 +1041,14 @@ public class LambdaExpressionReader {
 
   /**
    * Reads the current ASTORE instruction, using elements from the given
-   * {@code expressionLinkedList}.
+   * {@code operandStack}.
    * 
-   * @param expressionLinkedList the stack of {@link Expression}
+   * @param operandStack the stack of {@link Expression}
    */
-  private static void readArrayStoreInstruction(final LinkedList<Expression> expressionLinkedList) {
-    final Expression element = expressionLinkedList.pollLast();
-    final NumberLiteral elementIndex = (NumberLiteral) expressionLinkedList.pollLast();
-    final ArrayVariable targetArray = (ArrayVariable) expressionLinkedList.pollLast();
+  private static void readArrayStoreInstruction(final LinkedList<Expression> operandStack) {
+    final Expression element = operandStack.pollLast();
+    final NumberLiteral elementIndex = (NumberLiteral) operandStack.pollLast();
+    final ArrayVariable targetArray = (ArrayVariable) operandStack.pollLast();
     targetArray.setElement(elementIndex.getValue().intValue(), element);
   }
 

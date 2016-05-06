@@ -12,7 +12,9 @@ package org.lambdamatic.analyzer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.lambdamatic.testutils.JavaMethods.ArrayUtil_toArray;
+import static org.lambdamatic.testutils.JavaMethods.Date_getTime;
 import static org.lambdamatic.testutils.JavaMethods.Object_equals;
+import static org.lambdamatic.testutils.JavaMethods.Object_notify;
 import static org.lambdamatic.testutils.JavaMethods.TestPojo_elementMatch;
 
 import java.io.IOException;
@@ -112,6 +114,11 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
             new MethodInvocation(e_dot_field, Object_equals, new StringLiteral("foo"))),
         TestPojo.class, "e");
     final EmbeddedTestPojo embeddedTestPojo = new EmbeddedTestPojo();
+    final MethodInvocation e_dot_field_dot_notify =
+        new MethodInvocation(e_dot_field, Object_notify);
+    final FieldAccess e_dot_dateValue = new FieldAccess(testPojo, "dateValue");
+    final MethodInvocation e_dot_dateValue_dot_getTime =
+        new MethodInvocation(e_dot_dateValue, Date_getTime);
 
     return new Object[][] {
         match(t -> ArrayUtil.toArray(t.stringValue, t.dateValue),
@@ -194,7 +201,11 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
                 new Operation(Operator.ADD, testPojo_dot_primitiveIntValue, new NumberLiteral(1))),
             new MethodInvocation(testPojo_dot_elementList, JavaMethods.List_add,
                 new CapturedArgument(embeddedTestPojo)))),
-
+        match(t -> {
+          t.field.notify();
+          t.dateValue.getTime();
+        }, Arrays.array(e_dot_field_dot_notify, e_dot_dateValue_dot_getTime))
+           
     };
   }
 

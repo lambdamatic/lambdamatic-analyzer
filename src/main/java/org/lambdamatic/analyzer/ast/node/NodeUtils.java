@@ -29,16 +29,16 @@ public class NodeUtils {
   /**
    * Returns the given statement as a pretty formatted {@link String}
    * 
-   * @param statement the statement
+   * @param node the statement
    * @return the pretty formatted representation of the given statement.
    */
-  public static String prettyPrint(final Node statement) {
+  public static String prettyPrint(final Node node) {
     try {
       final StringBuilder builder = new StringBuilder();
       int indent = 0;
       // reads the statement and insert CR/LF and indentations when
       // crossing curly brackets.
-      StringReader reader = new StringReader(statement.toString());
+      StringReader reader = new StringReader(node.toString());
       char current;
       while ((current = (char) reader.read()) != EOS) {
         if (current == '{') {
@@ -60,7 +60,7 @@ public class NodeUtils {
       }
       return builder.toString();
     } catch (IOException e) {
-      LOGGER.warn("Failed to pretty print the given statement: " + statement, e);
+      LOGGER.warn("Failed to pretty print the given statement: " + node, e);
       return null;
     }
   }

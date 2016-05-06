@@ -227,7 +227,7 @@ public class LambdaExpressionAnalyzer {
         lambdaInfo.getImplMethodName());
     final LambdaExpressionReader lambdaExpressionReader = new LambdaExpressionReader();
     final Pair<List<Statement>, List<LocalVariable>> bytecode =
-        lambdaExpressionReader.readBytecodeStatement(lambdaInfo);
+        lambdaExpressionReader.readBytecodeStatements(lambdaInfo);
     final List<LocalVariable> lambdaExpressionArguments = bytecode.getRight();
     final List<Statement> lambdaExpressionStatements = bytecode.getLeft();
     final List<Statement> processedBlock = lambdaExpressionStatements.stream().map(LambdaExpressionAnalyzer::thinOut)

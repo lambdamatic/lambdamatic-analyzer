@@ -44,7 +44,7 @@ class InsnCursor {
   private final Map<String, AbstractInsnNode> labels;
 
   /**
-   * Constructor
+   * Constructor.
    * 
    * @param instructions the {@link InsnList} to iterate on.
    * @param labels the labels to locate specific instructions.
@@ -201,6 +201,15 @@ class InsnCursor {
       duplicateCursor.next();
     }
     return duplicateCursor;
+  }
+  
+  /**
+   * Indicates if the given {@code instruction} has a label in the bytecode.
+   * @param instruction the instruction to check
+   * @return <code>true</code> if the instruction is labelled, <code>false</code> otherwise
+   */
+  public boolean isLabelled(final AbstractInsnNode instruction) {
+    return this.labels.containsValue(instruction);
   }
 
 }
