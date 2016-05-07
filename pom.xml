@@ -161,6 +161,12 @@
 									<include>org.ow2.asm:asm-all</include>
 								</includes>
 							</artifactSet>
+							<relocations>
+								<relocation>
+									<pattern>org.objectweb.asm</pattern>
+									<shadedPattern>org.lambdamatic.shaded.objectweb.asm</shadedPattern>
+								</relocation>
+							</relocations>
 						</configuration>
 					</execution>
 				</executions>
