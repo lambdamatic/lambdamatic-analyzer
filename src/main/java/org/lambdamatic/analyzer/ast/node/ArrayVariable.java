@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Array created and used during the call to the Lambda Expression serialized method.
@@ -175,7 +174,7 @@ public class ArrayVariable extends ComplexExpression {
   @Override
   public void replaceElement(final Expression oldElementExpression,
       final Expression newElementExpression) {
-    final int oldExpressionIndex = ArrayUtils.indexOf(this.elements, oldElementExpression);
+    final int oldExpressionIndex = Arrays.binarySearch(this.elements, oldElementExpression);
     if (oldExpressionIndex > -1) {
       this.elements[oldExpressionIndex] = newElementExpression;
       newElementExpression.setParent(this);

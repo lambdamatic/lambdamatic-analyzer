@@ -8,7 +8,6 @@
 
 package org.lambdamatic.analyzer.ast.node;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 
 /**
@@ -150,8 +149,8 @@ public class FieldAccess extends ComplexExpression {
   @Override
   public Object getValue() {
     try {
-      return FieldUtils.getField(this.source.getJavaType(), getFieldName());
-    } catch (IllegalArgumentException e) {
+      return this.source.getJavaType().getField(getFieldName());
+    } catch (NoSuchFieldException | SecurityException e) {
       throw new AnalyzeException("Cannot retrieve field named '" + this.fieldName + "' on class "
           + this.source.getJavaType(), e);
     }

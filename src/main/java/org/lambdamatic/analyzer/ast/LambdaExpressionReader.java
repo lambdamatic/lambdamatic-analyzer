@@ -15,17 +15,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.lambdamatic.analyzer.LambdaExpressionAnalyzer;
-import org.lambdamatic.analyzer.ast.node.Node;
 import org.lambdamatic.analyzer.ast.node.ArrayVariable;
 import org.lambdamatic.analyzer.ast.node.Assignment;
 import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
@@ -43,6 +39,7 @@ import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.ast.node.Node;
 import org.lambdamatic.analyzer.ast.node.NullLiteral;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
 import org.lambdamatic.analyzer.ast.node.ObjectInstanciation;
@@ -51,6 +48,8 @@ import org.lambdamatic.analyzer.ast.node.Operation.Operator;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
 import org.lambdamatic.analyzer.ast.node.Statement;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
+import org.lambdamatic.analyzer.utils.ClassUtils;
+import org.lambdamatic.analyzer.utils.Pair;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
@@ -181,7 +180,7 @@ public class LambdaExpressionReader {
           lambdaInfo.getCapturedArguments(), localVariables);
       // now, let's identify the lambda expression arguments (_excluding_ the captured arguments)
       final List<LocalVariable> lambdaExpressionArguments = localVariables.toLocalVariables();
-      return new ImmutablePair<>(statements, lambdaExpressionArguments);
+      return new Pair<>(statements, lambdaExpressionArguments);
     }
   }
 
@@ -277,7 +276,7 @@ public class LambdaExpressionReader {
       args.add(castOperand(arg, argumentClassName));
       try {
         parameterTypes.add(ClassUtils.getClass(argumentClassName));
-      } catch (Exception e) {
+      } catch (ClassNotFoundException e) {
         throw new AnalyzeException("Failed to find class '" + argumentClassName + "'", e);
       }
     });
