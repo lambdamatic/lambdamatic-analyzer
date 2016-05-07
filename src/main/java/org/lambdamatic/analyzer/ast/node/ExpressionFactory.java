@@ -10,8 +10,8 @@ package org.lambdamatic.analyzer.ast.node;
 
 import java.lang.reflect.Field;
 
-import org.apache.commons.lang3.ClassUtils;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
+import org.lambdamatic.analyzer.utils.ClassUtils;
 
 /**
  * {@link Expression} factory.
