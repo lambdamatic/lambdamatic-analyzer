@@ -818,11 +818,14 @@ public class LambdaExpressionReader {
    */
   private static void readIntInstruction(final IntInsnNode intInsnNode,
       final LinkedList<Expression> operandStack, final LocalVariables localVariables) {
-    if (intInsnNode.getOpcode() == Opcodes.BIPUSH) {
+    switch (intInsnNode.getOpcode()) {
+      case Opcodes.BIPUSH:
+      case Opcodes.SIPUSH:
       final Expression literal = new NumberLiteral(intInsnNode.operand);
       LOGGER.trace("Adding literal {}", literal);
       operandStack.add(literal);
-    } else {
+      break;
+     default:
       LOGGER.warn("IntInsnNode with OpCode {} was ignored.", intInsnNode.getOpcode());
     }
   }

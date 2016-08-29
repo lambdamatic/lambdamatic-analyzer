@@ -1,6 +1,7 @@
 .project
 .settings
 .classpath
+.checkstyle
 _tmp
 .project
 .externalToolBuilders
