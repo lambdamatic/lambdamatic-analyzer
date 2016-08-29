@@ -150,6 +150,15 @@ public class MethodInvocation extends ComplexExpression {
   public List<Expression> getArguments() {
     return this.arguments;
   }
+  
+  /**
+   * Looks-up the argument with the given {@code index} and returns its value.
+   * @param index the index of the argument to look-up
+   * @return the {@link Expression#getValue()} of the selected argument 
+   */
+  public Object getArgumentValue(final int index) {
+    return this.arguments.get(index).getValue();
+  }
 
   /**
    * @return the underlying Java {@link Method}
