@@ -9,17 +9,16 @@
 package org.lambdamatic;
 
 import java.io.Serializable;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * {@link Predicate} version of the {@link Consumer} .
+ * {@link Serializable} version of the {@link Predicate} .
  * 
  * @param <T> the type of argument
  */
 @FunctionalInterface
 public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
-  // this function interface has no extra method but is serializable.
+  // this functional interface has no extra method but is serializable.
 
 }
 

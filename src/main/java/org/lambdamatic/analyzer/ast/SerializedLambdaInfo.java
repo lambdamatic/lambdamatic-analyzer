@@ -9,10 +9,15 @@
 package org.lambdamatic.analyzer.ast;
 
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.lambdamatic.analyzer.ast.node.CapturedArgument;
+import org.lambdamatic.analyzer.utils.ClassUtils;
+import org.lambdamatic.analyzer.utils.ReflectionUtils;
 import org.objectweb.asm.Type;
 
 /**
@@ -22,14 +27,14 @@ import org.objectweb.asm.Type;
  */
 public class SerializedLambdaInfo {
 
-  /** the fully qualified name of the implementation class. */
-  private final String implClassName;
-
-  /** the name of the implementation method. */
-  private final String implMethodName;
+  /** the implementation class. */
+  private final Class<?> implClass;
 
   /** the signature of the implementation method. */
   private final String implMethodDesc;
+
+  /** the underlying Java method or constructor to be called when invoking the lambda expression. */
+  private final Executable implExecutable;
 
   /**
    * the (potentially empty) list of actual {@link CapturedArgument}.
@@ -37,29 +42,45 @@ public class SerializedLambdaInfo {
   private final List<CapturedArgument> capturedArguments;
 
   /**
+   * The signature of the functional interface method. Usefull to know if a result must be returned
+   * when using method references in Lambda expressions.
+   */
+  private final String instantiatedMethodType;
+
+  /**
    * Full constructor
    * 
    * @param serializedLambda the fully {@link SerializedLambda} carrying all the required info.
    */
   public SerializedLambdaInfo(final SerializedLambda serializedLambda) {
-    this(Type.getObjectType(serializedLambda.getImplClass()).getClassName(),
+    this(serializedLambda.getInstantiatedMethodType(),
+        Type.getObjectType(serializedLambda.getImplClass()).getClassName(),
         serializedLambda.getImplMethodName(), serializedLambda.getImplMethodSignature(),
-        getCapturedArguments(serializedLambda));
+        serializedLambda.getImplMethodKind(), getCapturedArguments(serializedLambda));
   }
 
   /**
    * Constructor.
    * 
+   * @param instantiatedMethodType The signature of the primary functional interface method after
+   *        type variables are substituted with their instantiation from the capture site
+   * 
+   * @param instantiatedMethodType the signature of the functional interface method. Useful to know
+   *        if a result must be returned when using method references in Lambda expressions
    * @param implClassName the fully qualified name of the Lambda implementation Class
    * @param implMethodName the name of the Lambda implementation method
    * @param implMethodSignature the signature of the Lambda implementation method
+   * @param implMethodKind Method handle kind for the implementation method
    * @param capturedArguments the captured arguments when calling the Lambda expression
    */
-  SerializedLambdaInfo(final String implClassName, final String implMethodName,
-      final String implMethodSignature, final List<CapturedArgument> capturedArguments) {
-    this.implClassName = implClassName;
-    this.implMethodName = implMethodName;
+  SerializedLambdaInfo(final String instantiatedMethodType, final String implClassName,
+      final String implMethodName, final String implMethodSignature, final int implMethodKind,
+      final List<CapturedArgument> capturedArguments) {
+    this.instantiatedMethodType = instantiatedMethodType;
+    this.implClass = ClassUtils.getClass(implClassName);
     this.implMethodDesc = implMethodSignature;
+    this.implExecutable =
+        ReflectionUtils.getDeclaredMethod(this.implClass, implMethodName, implMethodSignature);
     this.capturedArguments = capturedArguments;
   }
 
@@ -86,17 +107,26 @@ public class SerializedLambdaInfo {
   }
 
   /**
-   * @return the fully qualified name of the implementation class.
+   * @return the signature of the functional interface method. Usefull to know if a result must be
+   *         returned when using method references in Lambda expressions.
    */
-  public String getImplClassName() {
-    return this.implClassName;
+  public String getInstantiatedMethodType() {
+    return this.instantiatedMethodType;
   }
 
   /**
-   * @return the name of the implementation method.
+   * @return the implementation class.
    */
-  public String getImplMethodName() {
-    return this.implMethodName;
+  public Class<?> getImplClass() {
+    return this.implClass;
+  }
+
+  /**
+   * @return the underlying Java {@link Method} or {@link Constructor} to be called when invoking
+   *         the lambda expression.
+   */
+  public Executable getImplMethod() {
+    return this.implExecutable;
   }
 
   /**
@@ -110,16 +140,16 @@ public class SerializedLambdaInfo {
    * @return the fully qualified location of the Lambda Expression implementation.
    */
   public String getImplMethodId() {
-    return this.implClassName + "." + this.implMethodName + "(" + this.implMethodDesc + ")";
+    return this.implClass.getName() + "." + this.implExecutable.getName() + "("
+        + this.implMethodDesc + ")";
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((this.implClassName == null) ? 0 : this.implClassName.hashCode());
-    result = prime * result + ((this.implMethodDesc == null) ? 0 : this.implMethodDesc.hashCode());
-    result = prime * result + ((this.implMethodName == null) ? 0 : this.implMethodName.hashCode());
+    result = prime * result + ((this.implClass == null) ? 0 : this.implClass.hashCode());
+    result = prime * result + ((this.implExecutable == null) ? 0 : this.implExecutable.hashCode());
     return result;
   }
 
@@ -135,25 +165,18 @@ public class SerializedLambdaInfo {
       return false;
     }
     SerializedLambdaInfo other = (SerializedLambdaInfo) obj;
-    if (this.implClassName == null) {
-      if (other.implClassName != null) {
+    if (this.implClass == null) {
+      if (other.implClass != null) {
         return false;
       }
-    } else if (!this.implClassName.equals(other.implClassName)) {
+    } else if (!this.implClass.equals(other.implClass)) {
       return false;
     }
-    if (this.implMethodDesc == null) {
-      if (other.implMethodDesc != null) {
+    if (this.implExecutable == null) {
+      if (other.implExecutable != null) {
         return false;
       }
-    } else if (!this.implMethodDesc.equals(other.implMethodDesc)) {
-      return false;
-    }
-    if (this.implMethodName == null) {
-      if (other.implMethodName != null) {
-        return false;
-      }
-    } else if (!this.implMethodName.equals(other.implMethodName)) {
+    } else if (!this.implExecutable.equals(other.implExecutable)) {
       return false;
     }
     return true;
@@ -161,7 +184,8 @@ public class SerializedLambdaInfo {
 
   @Override
   public String toString() {
-    return "SerializedLambdaInfo for " + this.implClassName + "." + this.implMethodName;
+    return "SerializedLambdaInfo for " + this.implClass.getName() + "."
+        + this.implExecutable.getName();
   }
 
 }

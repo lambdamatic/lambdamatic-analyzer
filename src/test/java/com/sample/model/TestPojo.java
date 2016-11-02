@@ -40,6 +40,8 @@ public class TestPojo {
 
   public TestPojo() {}
 
+  public TestPojo(String foo) {}
+
   /**
    * constructor for testing purpose only.
    * @param stringValue the stringValue to assign
@@ -51,6 +53,9 @@ public class TestPojo {
     this.primitiveIntValue = primitiveIntValue;
   }
 
+  public static TestPojo build(String value) {
+    return new TestPojo(value);
+  }
 
   public boolean getPrimitiveBooleanValue() {
     return true;

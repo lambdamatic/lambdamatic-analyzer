@@ -157,7 +157,7 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
         new MethodInvocation(var_t, TestPojo_getPrimitiveDoubleValue);
     final MethodInvocation t_dot_getDoubleValue =
         new MethodInvocation(var_t, TestPojo_getDoubleValue);
-    final FieldAccess t_dot_stringValue = new FieldAccess(var_t, "stringValue");
+    final FieldAccess t_dot_stringValue = new FieldAccess(var_t, "stringValue", String.class);
     final MethodInvocation t_dot_getStringValue =
         new MethodInvocation(var_t, TestPojo_getStringValue);
     final MethodInvocation test_dot_getStringValue =
@@ -172,7 +172,7 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
         new MethodInvocation(t_dot_getStringValue, Object_equals, new StringLiteral("bar"));
     final MethodInvocation t_dot_getStringValue_dot_equals_baz =
         new MethodInvocation(t_dot_getStringValue, Object_equals, new StringLiteral("baz"));
-    final FieldAccess t_dot_field = new FieldAccess(var_t, "field");
+    final FieldAccess t_dot_field = new FieldAccess(var_t, "field", String.class);
     final MethodInvocation t_dot_field_dot_equals_foo =
         new MethodInvocation(t_dot_field, Object_equals, new StringLiteral("foo"));
     final MethodInvocation t_dot_field_dot_equals_bar =
@@ -183,18 +183,18 @@ public class SerializablePredicateExpressionBytecodeAnalyzerTest {
         CompoundExpressionOperator.EQUALS, t_dot_field, new StringLiteral("foo"));
     final CompoundExpression t_dot_field_not_equals_foo = new CompoundExpression(
         CompoundExpressionOperator.NOT_EQUALS, t_dot_field, new StringLiteral("foo"));
-    final FieldAccess t_dot_enumPojo = new FieldAccess(var_t, "enumPojo");
+    final FieldAccess t_dot_enumPojo = new FieldAccess(var_t, "enumPojo", EnumPojo.class);
     final CompoundExpression t_dot_enumPojo_equals_foo = new CompoundExpression(
         CompoundExpressionOperator.EQUALS, t_dot_enumPojo, new EnumLiteral(EnumPojo.FOO));
     final CompoundExpression t_dot_enumPojo_not_equals_foo = new CompoundExpression(
         CompoundExpressionOperator.NOT_EQUALS, t_dot_enumPojo, new EnumLiteral(EnumPojo.FOO));
     final MethodInvocation t_dot_enumPojo_dot_equals_foo =
         new MethodInvocation(t_dot_enumPojo, Object_equals, new EnumLiteral(EnumPojo.FOO));
-    final FieldAccess t_dot_primitiveIntValue = new FieldAccess(var_t, "primitiveIntValue");
+    final FieldAccess t_dot_primitiveIntValue = new FieldAccess(var_t, "primitiveIntValue", int.class);
     final CompoundExpression t_dot_primitiveIntValue_equals_42 = new CompoundExpression(
         CompoundExpressionOperator.EQUALS, t_dot_primitiveIntValue, new NumberLiteral(42));
 
-    final FieldAccess t_elementList = new FieldAccess(var_t, "elementList");
+    final FieldAccess t_elementList = new FieldAccess(var_t, "elementList", List.class);
     final MethodInvocation t_elements_dot_size = new MethodInvocation(t_elementList, List_size);
     final CompoundExpression t_elements_dot_size_equals_0 = new CompoundExpression(
         CompoundExpressionOperator.EQUALS, t_elements_dot_size, new NumberLiteral(0));

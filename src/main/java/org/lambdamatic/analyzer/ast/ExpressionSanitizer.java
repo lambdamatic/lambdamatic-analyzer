@@ -8,8 +8,8 @@
 
 package org.lambdamatic.analyzer.ast;
 
+import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -17,15 +17,16 @@ import java.util.stream.Stream;
 import org.lambdamatic.analyzer.ast.node.BooleanLiteral;
 import org.lambdamatic.analyzer.ast.node.ClassLiteral;
 import org.lambdamatic.analyzer.ast.node.ComplexExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression;
+import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.Expression;
 import org.lambdamatic.analyzer.ast.node.Expression.ExpressionType;
 import org.lambdamatic.analyzer.ast.node.ExpressionFactory;
 import org.lambdamatic.analyzer.ast.node.ExpressionVisitor;
 import org.lambdamatic.analyzer.ast.node.FieldAccess;
-import org.lambdamatic.analyzer.ast.node.CompoundExpression;
-import org.lambdamatic.analyzer.ast.node.CompoundExpression.CompoundExpressionOperator;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
+import org.lambdamatic.analyzer.utils.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,10 +149,10 @@ public class ExpressionSanitizer extends ExpressionVisitor {
   static class MethodMatcher {
     /** the type of the element on which the method is called. */
     private final Class<?> sourceType;
-    
+
     /** the name of the method. */
     private final String methodName;
-    
+
     /** the type of the arguments of this method. */
     private final Class<?>[] argumentTypes;
 
@@ -195,7 +196,7 @@ public class ExpressionSanitizer extends ExpressionVisitor {
         return false;
       }
       // fail fast if source type or method name or number of arguments don't match
-      final Method javaMethod = methodInvocation.getJavaMethod();
+      final Executable javaMethod = methodInvocation.getJavaMethod();
       if (this.sourceType.equals(javaMethod.getDeclaringClass())
           && this.methodName.equals(methodInvocation.getMethodName())
           && Arrays.deepEquals(javaMethod.getParameterTypes(), this.argumentTypes)) {

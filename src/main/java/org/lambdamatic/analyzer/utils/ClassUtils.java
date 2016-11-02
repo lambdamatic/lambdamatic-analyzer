@@ -10,6 +10,8 @@ package org.lambdamatic.analyzer.utils;
 
 import java.util.stream.IntStream;
 
+import org.lambdamatic.analyzer.exception.AnalyzeException;
+
 /**
  * Utility class for {@link Class} objects.
  */
@@ -27,29 +29,33 @@ public class ClassUtils {
    * 
    * @param className the fully qualified name of the class to load
    * @return the matching {@link Class}
-   * @throws ClassNotFoundException if the class was not found
+   * @throws AnalyzeException if the class was not found
    */
-  public static Class<?> getClass(final String className) throws ClassNotFoundException {
-    switch (className) {
-      case "boolean":
-        return boolean.class;
-      case "byte":
-        return byte.class;
-      case "char":
-        return char.class;
-      case "short":
-        return short.class;
-      case "int":
-        return int.class;
-      case "long":
-        return long.class;
-      case "double":
-        return double.class;
-      case "float":
-        return float.class;
-      default:
-        return Class.forName(toJLSClassName(className), true,
-            Thread.currentThread().getContextClassLoader());
+  public static Class<?> getClass(final String className) {
+    try {
+      switch (className) {
+        case "boolean":
+          return boolean.class;
+        case "byte":
+          return byte.class;
+        case "char":
+          return char.class;
+        case "short":
+          return short.class;
+        case "int":
+          return int.class;
+        case "long":
+          return long.class;
+        case "double":
+          return double.class;
+        case "float":
+          return float.class;
+        default:
+          return Class.forName(toJLSClassName(className), true,
+              Thread.currentThread().getContextClassLoader());
+      }
+    } catch (final ClassNotFoundException e) {
+      throw new AnalyzeException("Failed to retrieve class with name " + className, e);
     }
   }
 
@@ -67,7 +73,7 @@ public class ClassUtils {
    */
   public static String toJLSClassName(final String className) {
     final StringBuilder classNameBuffer = new StringBuilder();
-    final IntPair<String> rawClassName = countArraySize(className); 
+    final IntPair<String> rawClassName = countArraySize(className);
     if (rawClassName.getRight() > 0) {
       IntStream.range(0, rawClassName.getRight()).forEach(i -> classNameBuffer.append("["));
       classNameBuffer.append("L").append(rawClassName.getLeft()).append(';');
@@ -75,7 +81,7 @@ public class ClassUtils {
     }
     return className;
   }
-  
+
   private static IntPair<String> countArraySize(final String className) {
     if (className.contains("[]")) {
       final String rawClassName = className.replaceFirst("\\[\\]", "");

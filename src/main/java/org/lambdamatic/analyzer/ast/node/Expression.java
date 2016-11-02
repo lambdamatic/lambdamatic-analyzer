@@ -32,27 +32,49 @@ public abstract class Expression extends Node implements Comparable<Expression> 
    */
   public enum ExpressionType {
     /** Boolean literal expression. */
-    BOOLEAN_LITERAL, /** Character literal expression. */
-    CHARACTER_LITERAL, /** Class literal expression. */
-    CLASS_LITERAL, /** Number literal expression. */
-    NUMBER_LITERAL, /** null literal expression. */
-    NULL_LITERAL, /** String literal expression. */
-    STRING_LITERAL, /** Enum literal expression. */
-    ENUM_LITERAL, /** Object instanciation expression. */
-    OBJECT_INSTANCIATION, /** Object instance expression. */
-    OBJECT_INSTANCE, /** Array variable expression. */
-    ARRAY_VARIABLE, /** Method invocation expression. */
-    METHOD_INVOCATION, /** Field access expression. */
-    FIELD_ACCESS, /** Compound expression. */
-    COMPOUND, /** "Instance of" expression. */
-    INSTANCE_OF, /** Local variable expression. */
-    LOCAL_VARIABLE, /** Captured argument expression. */
-    CAPTURED_ARGUMENT, /** Captured argument reference expression. */
-    CAPTURED_ARGUMENT_REF, /** Lambda expression. */
-    LAMBDA_EXPRESSION, /** Assignment expression. */
-    ASSIGNMENT, /** Operation expression. */
-    OPERATION, /** Array element access expression. */
-    ARRAY_ELEMENT_ACCESS;
+    BOOLEAN_LITERAL,
+    /** Character literal expression. */
+    CHARACTER_LITERAL,
+    /** Class literal expression. */
+    CLASS_LITERAL,
+    /** Number literal expression. */
+    NUMBER_LITERAL,
+    /** null literal expression. */
+    NULL_LITERAL,
+    /** String literal expression. */
+    STRING_LITERAL,
+    /** Enum literal expression. */
+    ENUM_LITERAL,
+    /** Object instanciation expression. */
+    OBJECT_INSTANCIATION,
+    /** Object instance expression. */
+    OBJECT_INSTANCE,
+    /** Array variable expression. */
+    ARRAY_VARIABLE,
+    /** Method invocation expression. */
+    METHOD_INVOCATION,
+    /** Field access expression. */
+    FIELD_ACCESS,
+    /** Compound expression. */
+    COMPOUND,
+    /** "Instance of" expression. */
+    INSTANCE_OF,
+    /** Local variable expression. */
+    LOCAL_VARIABLE,
+    /** Captured argument expression. */
+    CAPTURED_ARGUMENT,
+    /** Captured argument reference expression. */
+    CAPTURED_ARGUMENT_REF,
+    /** Lambda expression. */
+    LAMBDA_EXPRESSION,
+    /** Assignment expression. */
+    ASSIGNMENT,
+    /** Operation expression. */
+    OPERATION,
+    /** Array element access expression. */
+    ARRAY_ELEMENT_ACCESS, 
+    /** Method reference. */
+    METHOD_REFERENCE;
   }
 
   /**
@@ -169,7 +191,6 @@ public abstract class Expression extends Node implements Comparable<Expression> 
   public Expression duplicate() {
     return duplicate(generateId());
   }
-
 
   /**
    * @return the {@code absolute} version of this {@link Expression}, ie, the non-inverted form if

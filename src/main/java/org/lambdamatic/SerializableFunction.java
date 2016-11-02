@@ -19,7 +19,7 @@ import java.util.function.Function;
  */
 @FunctionalInterface
 public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {
-  // this function interface has no extra method but is serializable.
+  // this functional interface has no extra method but is serializable.
 
 }
 

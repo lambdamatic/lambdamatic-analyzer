@@ -723,11 +723,11 @@ public class CompoundExpressionSimplificationTest {
     final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
     final CompoundExpression primitiveIntValueEquals42Expression =
         new CompoundExpression(CompoundExpressionOperator.EQUALS,
-            new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+            new FieldAccess(var, "primitiveIntValue", int.class), new NumberLiteral(42));
     final CompoundExpression fieldEqualsFooExpression = new CompoundExpression(
-        CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+        CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field", String.class), new StringLiteral("FOO"));
     final CompoundExpression enumPojoEqualsFooExpression =
-        new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo"),
+        new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo", EnumPojo.class),
             new EnumLiteral(EnumPojo.FOO));
     final CompoundExpression expression =
         new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,
@@ -971,9 +971,9 @@ public class CompoundExpressionSimplificationTest {
   public void shouldSimplifyMixOfContionalOrIncludingConditionalAndOperandsWithFieldAccesses() {
     // given ((!a.c) + (a.b) + (a.!b.c))
     final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-    final FieldAccess fieldA = new FieldAccess(var, "fieldA");
-    final FieldAccess fieldB = new FieldAccess(var, "fieldB");
-    final FieldAccess fieldC = new FieldAccess(var, "fieldC");
+    final FieldAccess fieldA = new FieldAccess(var, "fieldA", String.class);
+    final FieldAccess fieldB = new FieldAccess(var, "fieldB", String.class);
+    final FieldAccess fieldC = new FieldAccess(var, "fieldC", String.class);
     final MethodInvocation equalsAMethod =
         new MethodInvocation(fieldA, Object_equals, new StringLiteral("A"));
     final MethodInvocation equalsBMethod =
@@ -1003,9 +1003,9 @@ public class CompoundExpressionSimplificationTest {
   public void shouldSimplifyUsingFactorizationThenUnaryOperatorLawsOnConditionalOr() {
     // given ((!a.c) + (a.b) + (a.c))
     final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-    final FieldAccess fieldA = new FieldAccess(var, "fieldA");
-    final FieldAccess fieldB = new FieldAccess(var, "fieldB");
-    final FieldAccess fieldC = new FieldAccess(var, "fieldC");
+    final FieldAccess fieldA = new FieldAccess(var, "fieldA", String.class);
+    final FieldAccess fieldB = new FieldAccess(var, "fieldB", String.class);
+    final FieldAccess fieldC = new FieldAccess(var, "fieldC", String.class);
     final MethodInvocation equalsAMethod =
         new MethodInvocation(fieldA, Object_equals, new StringLiteral("A"));
     final MethodInvocation equalsBMethod =
@@ -1034,9 +1034,9 @@ public class CompoundExpressionSimplificationTest {
   public void shouldSimplifyUsingFactorizationThenUnaryOperatorLawsOnConditionalAnd() {
     // given ((!a + c).(a + b).(a + c))
     final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-    final FieldAccess fieldA = new FieldAccess(var, "fieldA");
-    final FieldAccess fieldB = new FieldAccess(var, "fieldB");
-    final FieldAccess fieldC = new FieldAccess(var, "fieldC");
+    final FieldAccess fieldA = new FieldAccess(var, "fieldA", String.class);
+    final FieldAccess fieldB = new FieldAccess(var, "fieldB", String.class);
+    final FieldAccess fieldC = new FieldAccess(var, "fieldC", String.class);
     final MethodInvocation equalsAMethod =
         new MethodInvocation(fieldA, Object_equals, new StringLiteral("A"));
     final MethodInvocation equalsBMethod =
@@ -1065,9 +1065,9 @@ public class CompoundExpressionSimplificationTest {
   public void shouldNotSimplifyMixOfContionalOrIncludingConditionalAndOperandsWithFieldAccesses() {
     // given '((a . b) + c))'
     final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-    final FieldAccess fieldA = new FieldAccess(var, "fieldA");
-    final FieldAccess fieldB = new FieldAccess(var, "fieldB");
-    final FieldAccess fieldC = new FieldAccess(var, "fieldC");
+    final FieldAccess fieldA = new FieldAccess(var, "fieldA", String.class);
+    final FieldAccess fieldB = new FieldAccess(var, "fieldB", String.class);
+    final FieldAccess fieldC = new FieldAccess(var, "fieldC", String.class);
     final MethodInvocation equalsAMethod =
         new MethodInvocation(fieldA, Object_equals, new StringLiteral("A"));
     final MethodInvocation equalsBMethod =
@@ -1092,7 +1092,7 @@ public class CompoundExpressionSimplificationTest {
   public void shouldApplyDistributiveLawOnConditionalOrWithTwoMethodInvocationOperands() {
     // given '(foo.(bar + !baz)) + (!foo.!baz)'
     final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
-    final FieldAccess fieldF = new FieldAccess(var, "f");
+    final FieldAccess fieldF = new FieldAccess(var, "f", String.class);
     final MethodInvocation equalsFoo =
         new MethodInvocation(fieldF, Object_equals, new StringLiteral("foo"));
     final MethodInvocation equalsBar =
@@ -1128,11 +1128,11 @@ public class CompoundExpressionSimplificationTest {
     final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
     final CompoundExpression primitiveIntValueEquals42Expression =
         new CompoundExpression(CompoundExpressionOperator.EQUALS,
-            new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+            new FieldAccess(var, "primitiveIntValue", int.class), new NumberLiteral(42));
     final CompoundExpression fieldEqualsFooExpression = new CompoundExpression(
-        CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+        CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field", String.class), new StringLiteral("FOO"));
     final CompoundExpression enumPojoEqualsFooExpression =
-        new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo"),
+        new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo", EnumPojo.class),
             new EnumLiteral(EnumPojo.FOO));
     final CompoundExpression expression =
         new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_OR,

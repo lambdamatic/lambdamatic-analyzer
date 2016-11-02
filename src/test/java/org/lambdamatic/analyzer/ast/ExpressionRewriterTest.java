@@ -66,10 +66,10 @@ public class ExpressionRewriterTest {
             new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
     final CompoundExpression getEnumPojoMethodEqualsFieldBar_1 = new CompoundExpression(
         CompoundExpressionOperator.EQUALS, new MethodInvocation(var, TestPojo_getEnumPojo),
-        new FieldAccess(new ClassLiteral(EnumPojo.class), "BAR"));
+        new FieldAccess(new ClassLiteral(EnumPojo.class), "BAR", EnumPojo.class));
     final CompoundExpression getEnumPojoMethodEqualsFieldBar_2 = new CompoundExpression(
         CompoundExpressionOperator.NOT_EQUALS, new MethodInvocation(var, TestPojo_getEnumPojo),
-        new FieldAccess(new ClassLiteral(EnumPojo.class), "BAR"));
+        new FieldAccess(new ClassLiteral(EnumPojo.class), "BAR", EnumPojo.class));
     final CompoundExpression getStringValueMethodEqualsFoo1 =
         new CompoundExpression(CompoundExpressionOperator.EQUALS,
             new MethodInvocation(var, TestPojo_getStringValue), new StringLiteral("foo"));
@@ -99,7 +99,7 @@ public class ExpressionRewriterTest {
             new MethodInvocation(var, TestPojo_getPrimitiveIntValue), new NumberLiteral(42));
     final CompoundExpression getEnumPojoMethodEqualsFieldBar = new CompoundExpression(
         CompoundExpressionOperator.EQUALS, new MethodInvocation(var, TestPojo_getEnumPojo),
-        new FieldAccess(new ClassLiteral(EnumPojo.class), "BAR"));
+        new FieldAccess(new ClassLiteral(EnumPojo.class), "BAR", EnumPojo.class));
     final CompoundExpression getStringValueMethodEqualsFoo =
         new CompoundExpression(CompoundExpressionOperator.EQUALS,
             new MethodInvocation(var, TestPojo_getStringValue), new StringLiteral("foo"));

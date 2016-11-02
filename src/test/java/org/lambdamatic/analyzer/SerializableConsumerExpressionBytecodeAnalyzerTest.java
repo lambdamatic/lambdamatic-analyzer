@@ -1,12 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2015 Red Hat. All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which accompanies this
+ * distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
  *
- * Contributors:
- *      Red Hat - Initial Contribution
+ * Contributors: Red Hat - Initial Contribution
  *******************************************************************************/
 package org.lambdamatic.analyzer;
 
@@ -18,7 +15,10 @@ import static org.lambdamatic.testutils.JavaMethods.Object_notify;
 import static org.lambdamatic.testutils.JavaMethods.TestPojo_elementMatch;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.assertj.core.util.Arrays;
@@ -39,7 +39,9 @@ import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.LocalVariable;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
+import org.lambdamatic.analyzer.ast.node.MethodReference;
 import org.lambdamatic.analyzer.ast.node.NumberLiteral;
+import org.lambdamatic.analyzer.ast.node.ObjectInstance;
 import org.lambdamatic.analyzer.ast.node.Operation;
 import org.lambdamatic.analyzer.ast.node.Operation.Operator;
 import org.lambdamatic.analyzer.ast.node.ReturnStatement;
@@ -51,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sample.model.EmbeddedTestPojo;
+import com.sample.model.TestInterface;
 import com.sample.model.TestPojo;
 
 /**
@@ -76,7 +79,7 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
    * @param expression the expected result
    * @return an array containing the 2 arguments.
    */
-  private static Object[] match(final SerializableConsumer<TestPojo> lambdaExpression,
+  private static Object[] matchOnTestPojo(final SerializableConsumer<TestPojo> lambdaExpression,
       final Expression expression) {
     return new Object[] {lambdaExpression, expression};
   }
@@ -88,27 +91,43 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
    * @param expressions the expected result
    * @return an array containing the 2 arguments.
    */
-  private static Object[] match(final SerializableConsumer<TestPojo> lambdaExpression,
+  private static Object[] matchOnTestPojo(final SerializableConsumer<TestPojo> lambdaExpression,
       final Expression[] expressions) {
     return new Object[] {lambdaExpression, expressions};
   }
 
   /**
+   * Utility method that makes the JUnit parameters declaration much more readable.
+   * 
+   * @param lambdaExpression the {@link FunctionalInterface} to encode
+   * @param expression the expected result
+   * @return an array containing the 2 arguments.
+   */
+  private static Object[] matchOnTestInterface(
+      final SerializableConsumer<TestInterface> lambdaExpression, final Expression expression) {
+    return new Object[] {lambdaExpression, expression};
+  }
+
+  /**
    * @return the dataset to use for the tests.
+   * @throws SecurityException
+   * @throws NoSuchMethodException
    */
   @Parameters(name = "[{index}] expect {1}")
-  public static Object[][] data()  {
+  public static Object[][] data() throws NoSuchMethodException, SecurityException {
     final String foo = "foo";
     final TestPojo anotherPojo = new TestPojo();
     final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
-    final FieldAccess testPojo_dot_stringValue = new FieldAccess(testPojo, "stringValue");
+    final FieldAccess testPojo_dot_stringValue =
+        new FieldAccess(testPojo, "stringValue", String.class);
     final FieldAccess testPojo_dot_primitiveIntValue =
-        new FieldAccess(testPojo, "primitiveIntValue");
-    final FieldAccess testPojo_dot_field = new FieldAccess(testPojo, "field");
-    final FieldAccess testPojo_dot_dateValue = new FieldAccess(testPojo, "dateValue");
-    final FieldAccess testPojo_dot_elementList = new FieldAccess(testPojo, "elementList");
+        new FieldAccess(testPojo, "primitiveIntValue", int.class);
+    final FieldAccess testPojo_dot_field = new FieldAccess(testPojo, "field", String.class);
+    final FieldAccess testPojo_dot_dateValue = new FieldAccess(testPojo, "dateValue", Date.class);
+    final FieldAccess testPojo_dot_elementList =
+        new FieldAccess(testPojo, "elementList", List.class);
     final FieldAccess e_dot_field =
-        new FieldAccess(new LocalVariable(0, "e", TestPojo.class), "field");
+        new FieldAccess(new LocalVariable(0, "e", TestPojo.class), "field", String.class);
     final LambdaExpression e_dot_field_equals_foo = new LambdaExpression(
         new ReturnStatement(
             new MethodInvocation(e_dot_field, Object_equals, new StringLiteral("foo"))),
@@ -116,97 +135,108 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
     final EmbeddedTestPojo embeddedTestPojo = new EmbeddedTestPojo();
     final MethodInvocation e_dot_field_dot_notify =
         new MethodInvocation(e_dot_field, Object_notify);
-    final FieldAccess e_dot_dateValue = new FieldAccess(testPojo, "dateValue");
+    final FieldAccess e_dot_dateValue = new FieldAccess(testPojo, "dateValue", Date.class);
     final MethodInvocation e_dot_dateValue_dot_getTime =
         new MethodInvocation(e_dot_dateValue, Date_getTime);
 
     return new Object[][] {
-        match(t -> ArrayUtil.toArray(t.stringValue, t.dateValue),
+        matchOnTestPojo(t -> ArrayUtil.toArray(t.stringValue, t.dateValue),
             new MethodInvocation(new ClassLiteral(ArrayUtil.class), ArrayUtil_toArray,
-                new ArrayVariable(Object[].class, new FieldAccess(testPojo, "stringValue"),
-                    new FieldAccess(testPojo, "dateValue")))),
-        match(t -> ArrayUtil.toArray(t.field),
+                new ArrayVariable(Object[].class,
+                    new FieldAccess(testPojo, "stringValue", String.class),
+                    new FieldAccess(testPojo, "dateValue", Date.class)))),
+        matchOnTestPojo(t -> ArrayUtil.toArray(t.field),
             new MethodInvocation(new ClassLiteral(ArrayUtil.class), ArrayUtil_toArray,
                 new ArrayVariable(Object[].class, testPojo_dot_field))),
-        match(t -> ArrayUtil.toArray(t.field, t.dateValue, t.elementList),
+        matchOnTestPojo(t -> ArrayUtil.toArray(t.field, t.dateValue, t.elementList),
             new MethodInvocation(new ClassLiteral(ArrayUtil.class), ArrayUtil_toArray,
                 new ArrayVariable(Object[].class, testPojo_dot_field, testPojo_dot_dateValue,
                     testPojo_dot_elementList))),
         // Verify nested Lambda expression
-        match(t -> t.elementMatch(e -> e.field.equals("foo")),
+        matchOnTestPojo(t -> t.elementMatch(e -> e.field.equals("foo")),
             new MethodInvocation(testPojo, TestPojo_elementMatch, e_dot_field_equals_foo)),
-        match(t -> t.elementMatch(e -> e.field.equals(foo)),
+        matchOnTestPojo(t -> t.elementMatch(e -> e.field.equals(foo)),
             new MethodInvocation(testPojo, TestPojo_elementMatch, e_dot_field_equals_foo)),
-        match(t -> t.elementMatch(e -> e.field.equals(anotherPojo.getStringValue())),
+        matchOnTestPojo(t -> t.elementMatch(e -> e.field.equals(anotherPojo.getStringValue())),
             new MethodInvocation(testPojo, TestPojo_elementMatch, e_dot_field_equals_foo)),
-        match(t -> t.elementMatch(e -> e.field.equals(anotherPojo.stringValue)),
+        matchOnTestPojo(t -> t.elementMatch(e -> e.field.equals(anotherPojo.stringValue)),
             new MethodInvocation(testPojo, TestPojo_elementMatch, e_dot_field_equals_foo)),
         // verify assignation statement(s)
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.stringValue = "foo";
-        } , new Assignment(testPojo_dot_stringValue, new StringLiteral("foo"))), match(t -> {
+        }, new Assignment(testPojo_dot_stringValue, new StringLiteral("foo"))),
+        matchOnTestPojo(t -> {
           t.stringValue = "foo";
           t.field = "baz";
-        } , Arrays.array(new Assignment(testPojo_dot_stringValue, new StringLiteral("foo")),
+        }, Arrays.array(new Assignment(testPojo_dot_stringValue, new StringLiteral("foo")),
             new Assignment(testPojo_dot_field, new StringLiteral("baz")))),
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue++;
-        } , new Assignment(testPojo_dot_primitiveIntValue,
+        }, new Assignment(testPojo_dot_primitiveIntValue,
             new Operation(Operator.ADD, testPojo_dot_primitiveIntValue, new NumberLiteral(1)))),
 
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue += 2;
-        } , new Assignment(testPojo_dot_primitiveIntValue,
+        }, new Assignment(testPojo_dot_primitiveIntValue,
             new Operation(Operator.ADD, testPojo_dot_primitiveIntValue, new NumberLiteral(2)))),
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue = t.primitiveIntValue + 3;
-        } , new Assignment(testPojo_dot_primitiveIntValue,
+        }, new Assignment(testPojo_dot_primitiveIntValue,
             new Operation(Operator.ADD, testPojo_dot_primitiveIntValue, new NumberLiteral(3)))),
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue--;
-        } , new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.SUBTRACT,
+        }, new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.SUBTRACT,
             testPojo_dot_primitiveIntValue, new NumberLiteral(1)))),
 
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue -= 2;
-        } , new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.SUBTRACT,
+        }, new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.SUBTRACT,
             testPojo_dot_primitiveIntValue, new NumberLiteral(2)))),
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue = t.primitiveIntValue - 3;
-        } , new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.SUBTRACT,
+        }, new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.SUBTRACT,
             testPojo_dot_primitiveIntValue, new NumberLiteral(3)))),
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue *= 2;
-        } , new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.MULTIPLY,
+        }, new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.MULTIPLY,
             testPojo_dot_primitiveIntValue, new NumberLiteral(2)))),
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue = t.primitiveIntValue * 3;
-        } , new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.MULTIPLY,
+        }, new Assignment(testPojo_dot_primitiveIntValue, new Operation(Operator.MULTIPLY,
             testPojo_dot_primitiveIntValue, new NumberLiteral(3)))),
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue /= 2;
-        } , new Assignment(testPojo_dot_primitiveIntValue,
+        }, new Assignment(testPojo_dot_primitiveIntValue,
             new Operation(Operator.DIVIDE, testPojo_dot_primitiveIntValue, new NumberLiteral(2)))),
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.primitiveIntValue = t.primitiveIntValue / 3;
-        } , new Assignment(testPojo_dot_primitiveIntValue,
+        }, new Assignment(testPojo_dot_primitiveIntValue,
             new Operation(Operator.DIVIDE, testPojo_dot_primitiveIntValue, new NumberLiteral(3)))),
 
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.stringValue = "foo";
           t.primitiveIntValue++;
           t.elementList.add(embeddedTestPojo);
-        } , Arrays.array(new Assignment(testPojo_dot_stringValue, new StringLiteral("foo")),
+        }, Arrays.array(new Assignment(testPojo_dot_stringValue, new StringLiteral("foo")),
             new Assignment(testPojo_dot_primitiveIntValue,
                 new Operation(Operator.ADD, testPojo_dot_primitiveIntValue, new NumberLiteral(1))),
             new MethodInvocation(testPojo_dot_elementList, JavaMethods.List_add,
                 new CapturedArgument(embeddedTestPojo)))),
-        match(t -> {
+        matchOnTestPojo(t -> {
           t.field.notify();
           t.dateValue.getTime();
-        }, Arrays.array(e_dot_field_dot_notify, e_dot_dateValue_dot_getTime))
-           
-    };
+        }, Arrays.array(e_dot_field_dot_notify, e_dot_dateValue_dot_getTime)),
+        matchOnTestPojo(System.out::println,
+            new MethodReference(new ClassLiteral(PrintStream.class),
+                System.out.getClass().getMethod("println", Object.class),
+                java.util.Arrays.asList(new CapturedArgument(System.out)))),
+        matchOnTestPojo(t -> System.out.println("bonjour"),
+            new MethodInvocation(new ObjectInstance(System.out),
+                System.out.getClass().getMethod("println", String.class),
+                new StringLiteral("bonjour"))),
+        matchOnTestInterface(TestInterface::execute,
+            new MethodReference(new ClassLiteral(TestInterface.class),
+                TestInterface.class.getMethod("execute"), Collections.emptyList())),};
   }
 
   @Parameter(value = 0)

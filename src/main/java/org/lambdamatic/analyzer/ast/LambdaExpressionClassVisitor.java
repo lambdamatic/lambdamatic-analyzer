@@ -49,16 +49,13 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LambdaExpressionClassVisitor.class);
 
-  private final String lambdaImplClassName;
+  private final Class<?> lambdaImplClass;
 
   private final String lambdaImplMethodName;
 
   private final String lambdaImplMethodSignature;
 
   private DesugaredLambdaExpressionMethodVisitor desugaredLambdaExpressionMethodVisitor;
-
-  /** Flag to indicate if the caller class to the lambda expression is an interface. */
-  final boolean isInterface;
 
   /**
    * Constructor.
@@ -67,20 +64,10 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
    */
   LambdaExpressionClassVisitor(final SerializedLambdaInfo lambdaInfo) {
     super(Opcodes.ASM5);
-    this.lambdaImplClassName = lambdaInfo.getImplClassName();
-    this.lambdaImplMethodName = lambdaInfo.getImplMethodName();
+    this.lambdaImplClass = lambdaInfo.getImplClass();
+    this.lambdaImplMethodName = lambdaInfo.getImplMethod().getName();
     this.lambdaImplMethodSignature = lambdaInfo.getImplMethodDesc();
-    LOGGER.debug("About to analyze {}.{}", this.lambdaImplClassName, this.lambdaImplMethodName);
-    this.isInterface = isInterface(this.lambdaImplClassName);
-  }
-
-  private static boolean isInterface(final String targetClassName) {
-    try {
-      return Class.forName(targetClassName).isInterface();
-    } catch (ClassNotFoundException e) {
-      LOGGER.error("Could not resolve if {} is an interface", targetClassName, e);
-    }
-    return false;
+    LOGGER.debug("About to analyze {}.{}", this.lambdaImplClass.getName(), this.lambdaImplMethodName);
   }
 
   @Override
@@ -89,7 +76,7 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
     // FIXME: should stop visiting methods once the target one has been found.
     if (methodName.equals(this.lambdaImplMethodName)
         && desc.equals(this.lambdaImplMethodSignature)) {
-      LOGGER.trace("** Visiting {}.{} ({}) **", this.lambdaImplClassName, methodName, desc);
+      LOGGER.trace("** Visiting {}.{} ({}) **", this.lambdaImplClass.getName(), methodName, desc);
       this.desugaredLambdaExpressionMethodVisitor =
           new DesugaredLambdaExpressionMethodVisitor(this, desc);
       return this.desugaredLambdaExpressionMethodVisitor;
@@ -197,7 +184,7 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
         final String desc) {
       LOGGER.trace("MethodInsn {} {}.{} (desc={})", Printer.OPCODES[opcode], owner, name, desc);
       addInstruction(
-          new MethodInsnNode(opcode, owner, name, desc, this.parentClassVisitor.isInterface));
+          new MethodInsnNode(opcode, owner, name, desc, this.parentClassVisitor.lambdaImplClass.isInterface()));
     }
 
     @Override
@@ -205,7 +192,7 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
         final String desc, final boolean itf) {
       LOGGER.trace("MethodInsn {} {}.{} (desc={})", Printer.OPCODES[opcode], owner, name, desc);
       addInstruction(
-          new MethodInsnNode(opcode, owner, name, desc, this.parentClassVisitor.isInterface));
+          new MethodInsnNode(opcode, owner, name, desc, this.parentClassVisitor.lambdaImplClass.isInterface()));
     }
 
     @Override
@@ -256,6 +243,6 @@ class LambdaExpressionClassVisitor extends ClassVisitor {
       this.localVariables.set(index, new LocalVariableNode(name, desc, signature,
           new LabelNode(start), new LabelNode(end), index));
     }
-
+    
   }
 }

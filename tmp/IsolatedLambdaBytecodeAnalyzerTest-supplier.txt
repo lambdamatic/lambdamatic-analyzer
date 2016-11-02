@@ -1,0 +1,337 @@
+Classfile /Users/xcoulon/code/lambdamatic/lambdamatic-analyzer/target/test-classes/org/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest.class
+  Last modified Oct 26, 2016; size 3324 bytes
+  MD5 checksum bdbbcc1c6e1f00bb1aa4077c9c9f6b3a
+  Compiled from "IsolatedLambdaBytecodeAnalyzerTest.java"
+public class org.lambdamatic.analyzer.IsolatedLambdaBytecodeAnalyzerTest
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+    #1 = Class              #2            // org/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest
+    #2 = Utf8               org/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest
+    #3 = Class              #4            // java/lang/Object
+    #4 = Utf8               java/lang/Object
+    #5 = Utf8               LOGGER
+    #6 = Utf8               Lorg/slf4j/Logger;
+    #7 = Utf8               analyzer
+    #8 = Utf8               Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+    #9 = Utf8               <clinit>
+   #10 = Utf8               ()V
+   #11 = Utf8               Code
+   #12 = Methodref          #13.#15       // org/slf4j/LoggerFactory.getLogger:(Ljava/lang/Class;)Lorg/slf4j/Logger;
+   #13 = Class              #14           // org/slf4j/LoggerFactory
+   #14 = Utf8               org/slf4j/LoggerFactory
+   #15 = NameAndType        #16:#17       // getLogger:(Ljava/lang/Class;)Lorg/slf4j/Logger;
+   #16 = Utf8               getLogger
+   #17 = Utf8               (Ljava/lang/Class;)Lorg/slf4j/Logger;
+   #18 = Fieldref           #1.#19        // org/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest.LOGGER:Lorg/slf4j/Logger;
+   #19 = NameAndType        #5:#6         // LOGGER:Lorg/slf4j/Logger;
+   #20 = Utf8               LineNumberTable
+   #21 = Utf8               LocalVariableTable
+   #22 = Utf8               <init>
+   #23 = Methodref          #3.#24        // java/lang/Object."<init>":()V
+   #24 = NameAndType        #22:#10       // "<init>":()V
+   #25 = Methodref          #26.#28       // org/lambdamatic/analyzer/LambdaExpressionAnalyzer.getInstance:()Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+   #26 = Class              #27           // org/lambdamatic/analyzer/LambdaExpressionAnalyzer
+   #27 = Utf8               org/lambdamatic/analyzer/LambdaExpressionAnalyzer
+   #28 = NameAndType        #29:#30       // getInstance:()Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+   #29 = Utf8               getInstance
+   #30 = Utf8               ()Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+   #31 = Fieldref           #1.#32        // org/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest.analyzer:Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+   #32 = NameAndType        #7:#8         // analyzer:Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+   #33 = Utf8               this
+   #34 = Utf8               Lorg/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest;
+   #35 = Utf8               shouldParseExpression
+   #36 = Utf8               Exceptions
+   #37 = Class              #38           // java/io/IOException
+   #38 = Utf8               java/io/IOException
+   #39 = Class              #40           // java/lang/NoSuchMethodException
+   #40 = Utf8               java/lang/NoSuchMethodException
+   #41 = Class              #42           // java/lang/SecurityException
+   #42 = Utf8               java/lang/SecurityException
+   #43 = Utf8               RuntimeVisibleAnnotations
+   #44 = Utf8               Lorg/junit/Test;
+   #45 = NameAndType        #46:#47       // get:()Lorg/lambdamatic/SerializableSupplier;
+   #46 = Utf8               get
+   #47 = Utf8               ()Lorg/lambdamatic/SerializableSupplier;
+   #48 = InvokeDynamic      #0:#45        // #0:get:()Lorg/lambdamatic/SerializableSupplier;
+   #49 = Methodref          #26.#50       // org/lambdamatic/analyzer/LambdaExpressionAnalyzer.analyzeExpression:(Ljava/lang/Object;)Lorg/lambdamatic/analyzer/ast/node/LambdaExpression;
+   #50 = NameAndType        #51:#52       // analyzeExpression:(Ljava/lang/Object;)Lorg/lambdamatic/analyzer/ast/node/LambdaExpression;
+   #51 = Utf8               analyzeExpression
+   #52 = Utf8               (Ljava/lang/Object;)Lorg/lambdamatic/analyzer/ast/node/LambdaExpression;
+   #53 = Utf8               expression
+   #54 = Utf8               Lorg/lambdamatic/SerializableSupplier;
+   #55 = Utf8               resultExpression
+   #56 = Utf8               Lorg/lambdamatic/analyzer/ast/node/LambdaExpression;
+   #57 = Utf8               LocalVariableTypeTable
+   #58 = Utf8               Lorg/lambdamatic/SerializableSupplier<Lcom/sample/model/TestPojo;>;
+   #59 = Utf8               factory
+   #60 = Utf8               (Ljava/util/function/Supplier;)Lcom/sample/model/TestPojo;
+   #61 = Utf8               Signature
+   #62 = Utf8               (Ljava/util/function/Supplier<Lcom/sample/model/TestPojo;>;)Lcom/sample/model/TestPojo;
+   #63 = InterfaceMethodref #64.#66       // java/util/function/Supplier.get:()Ljava/lang/Object;
+   #64 = Class              #65           // java/util/function/Supplier
+   #65 = Utf8               java/util/function/Supplier
+   #66 = NameAndType        #46:#67       // get:()Ljava/lang/Object;
+   #67 = Utf8               ()Ljava/lang/Object;
+   #68 = Class              #69           // com/sample/model/TestPojo
+   #69 = Utf8               com/sample/model/TestPojo
+   #70 = Utf8               supplier
+   #71 = Utf8               Ljava/util/function/Supplier;
+   #72 = Utf8               Ljava/util/function/Supplier<Lcom/sample/model/TestPojo;>;
+   #73 = Utf8               $deserializeLambda$
+   #74 = Utf8               (Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+   #75 = Methodref          #76.#78       // java/lang/invoke/SerializedLambda.getImplMethodName:()Ljava/lang/String;
+   #76 = Class              #77           // java/lang/invoke/SerializedLambda
+   #77 = Utf8               java/lang/invoke/SerializedLambda
+   #78 = NameAndType        #79:#80       // getImplMethodName:()Ljava/lang/String;
+   #79 = Utf8               getImplMethodName
+   #80 = Utf8               ()Ljava/lang/String;
+   #81 = Methodref          #82.#84       // java/lang/String.hashCode:()I
+   #82 = Class              #83           // java/lang/String
+   #83 = Utf8               java/lang/String
+   #84 = NameAndType        #85:#86       // hashCode:()I
+   #85 = Utf8               hashCode
+   #86 = Utf8               ()I
+   #87 = String             #22           // <init>
+   #88 = Methodref          #82.#89       // java/lang/String.equals:(Ljava/lang/Object;)Z
+   #89 = NameAndType        #90:#91       // equals:(Ljava/lang/Object;)Z
+   #90 = Utf8               equals
+   #91 = Utf8               (Ljava/lang/Object;)Z
+   #92 = Methodref          #76.#93       // java/lang/invoke/SerializedLambda.getImplMethodKind:()I
+   #93 = NameAndType        #94:#86       // getImplMethodKind:()I
+   #94 = Utf8               getImplMethodKind
+   #95 = Methodref          #76.#96       // java/lang/invoke/SerializedLambda.getFunctionalInterfaceClass:()Ljava/lang/String;
+   #96 = NameAndType        #97:#80       // getFunctionalInterfaceClass:()Ljava/lang/String;
+   #97 = Utf8               getFunctionalInterfaceClass
+   #98 = String             #99           // org/lambdamatic/SerializableSupplier
+   #99 = Utf8               org/lambdamatic/SerializableSupplier
+  #100 = Methodref          #3.#89        // java/lang/Object.equals:(Ljava/lang/Object;)Z
+  #101 = Methodref          #76.#102      // java/lang/invoke/SerializedLambda.getFunctionalInterfaceMethodName:()Ljava/lang/String;
+  #102 = NameAndType        #103:#80      // getFunctionalInterfaceMethodName:()Ljava/lang/String;
+  #103 = Utf8               getFunctionalInterfaceMethodName
+  #104 = String             #46           // get
+  #105 = Methodref          #76.#106      // java/lang/invoke/SerializedLambda.getFunctionalInterfaceMethodSignature:()Ljava/lang/String;
+  #106 = NameAndType        #107:#80      // getFunctionalInterfaceMethodSignature:()Ljava/lang/String;
+  #107 = Utf8               getFunctionalInterfaceMethodSignature
+  #108 = String             #67           // ()Ljava/lang/Object;
+  #109 = Methodref          #76.#110      // java/lang/invoke/SerializedLambda.getImplClass:()Ljava/lang/String;
+  #110 = NameAndType        #111:#80      // getImplClass:()Ljava/lang/String;
+  #111 = Utf8               getImplClass
+  #112 = String             #69           // com/sample/model/TestPojo
+  #113 = Methodref          #76.#114      // java/lang/invoke/SerializedLambda.getImplMethodSignature:()Ljava/lang/String;
+  #114 = NameAndType        #115:#80      // getImplMethodSignature:()Ljava/lang/String;
+  #115 = Utf8               getImplMethodSignature
+  #116 = String             #10           // ()V
+  #117 = InvokeDynamic      #0:#45        // #0:get:()Lorg/lambdamatic/SerializableSupplier;
+  #118 = Class              #119          // java/lang/IllegalArgumentException
+  #119 = Utf8               java/lang/IllegalArgumentException
+  #120 = String             #121          // Invalid lambda deserialization
+  #121 = Utf8               Invalid lambda deserialization
+  #122 = Methodref          #118.#123     // java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+  #123 = NameAndType        #22:#124      // "<init>":(Ljava/lang/String;)V
+  #124 = Utf8               (Ljava/lang/String;)V
+  #125 = Utf8               StackMapTable
+  #126 = Utf8               SourceFile
+  #127 = Utf8               IsolatedLambdaBytecodeAnalyzerTest.java
+  #128 = Utf8               BootstrapMethods
+  #129 = Methodref          #130.#132     // java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #130 = Class              #131          // java/lang/invoke/LambdaMetafactory
+  #131 = Utf8               java/lang/invoke/LambdaMetafactory
+  #132 = NameAndType        #133:#134     // altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #133 = Utf8               altMetafactory
+  #134 = Utf8               (Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #135 = MethodHandle       #6:#129       // invokestatic java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #136 = MethodType         #67           //  ()Ljava/lang/Object;
+  #137 = Methodref          #68.#24       // com/sample/model/TestPojo."<init>":()V
+  #138 = MethodHandle       #8:#137       // newinvokespecial com/sample/model/TestPojo."<init>":()V
+  #139 = Utf8               ()Lcom/sample/model/TestPojo;
+  #140 = MethodType         #139          //  ()Lcom/sample/model/TestPojo;
+  #141 = Integer            1
+  #142 = Utf8               InnerClasses
+  #143 = Class              #144          // java/lang/invoke/MethodHandles$Lookup
+  #144 = Utf8               java/lang/invoke/MethodHandles$Lookup
+  #145 = Class              #146          // java/lang/invoke/MethodHandles
+  #146 = Utf8               java/lang/invoke/MethodHandles
+  #147 = Utf8               Lookup
+{
+  private static final org.slf4j.Logger LOGGER;
+    descriptor: Lorg/slf4j/Logger;
+    flags: ACC_PRIVATE, ACC_STATIC, ACC_FINAL
+
+  private final org.lambdamatic.analyzer.LambdaExpressionAnalyzer analyzer;
+    descriptor: Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+    flags: ACC_PRIVATE, ACC_FINAL
+
+  static {};
+    descriptor: ()V
+    flags: ACC_STATIC
+    Code:
+      stack=1, locals=0, args_size=0
+         0: ldc           #1                  // class org/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest
+         2: invokestatic  #12                 // Method org/slf4j/LoggerFactory.getLogger:(Ljava/lang/Class;)Lorg/slf4j/Logger;
+         5: putstatic     #18                 // Field LOGGER:Lorg/slf4j/Logger;
+         8: return
+      LineNumberTable:
+        line 34: 0
+        line 33: 5
+        line 34: 8
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+
+  public org.lambdamatic.analyzer.IsolatedLambdaBytecodeAnalyzerTest();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #23                 // Method java/lang/Object."<init>":()V
+         4: aload_0
+         5: invokestatic  #25                 // Method org/lambdamatic/analyzer/LambdaExpressionAnalyzer.getInstance:()Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+         8: putfield      #31                 // Field analyzer:Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+        11: return
+      LineNumberTable:
+        line 31: 0
+        line 36: 4
+        line 31: 11
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      12     0  this   Lorg/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest;
+
+  public void shouldParseExpression() throws java.io.IOException, java.lang.NoSuchMethodException, java.lang.SecurityException;
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Exceptions:
+      throws java.io.IOException, java.lang.NoSuchMethodException, java.lang.SecurityException
+    RuntimeVisibleAnnotations:
+      0: #44()
+    Code:
+      stack=2, locals=3, args_size=1
+         0: invokedynamic #48,  0             // InvokeDynamic #0:get:()Lorg/lambdamatic/SerializableSupplier;
+         5: astore_1
+         6: aload_0
+         7: getfield      #31                 // Field analyzer:Lorg/lambdamatic/analyzer/LambdaExpressionAnalyzer;
+        10: aload_1
+        11: invokevirtual #49                 // Method org/lambdamatic/analyzer/LambdaExpressionAnalyzer.analyzeExpression:(Ljava/lang/Object;)Lorg/lambdamatic/analyzer/ast/node/LambdaExpression;
+        14: astore_2
+        15: return
+      LineNumberTable:
+        line 42: 0
+        line 41: 5
+        line 47: 6
+        line 52: 15
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      16     0  this   Lorg/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest;
+            6      10     1 expression   Lorg/lambdamatic/SerializableSupplier;
+           15       1     2 resultExpression   Lorg/lambdamatic/analyzer/ast/node/LambdaExpression;
+      LocalVariableTypeTable:
+        Start  Length  Slot  Name   Signature
+            6      10     1 expression   Lorg/lambdamatic/SerializableSupplier<Lcom/sample/model/TestPojo;>;
+
+  private com.sample.model.TestPojo factory(java.util.function.Supplier<com.sample.model.TestPojo>);
+    descriptor: (Ljava/util/function/Supplier;)Lcom/sample/model/TestPojo;
+    flags: ACC_PRIVATE
+    Signature: #62                          // (Ljava/util/function/Supplier<Lcom/sample/model/TestPojo;>;)Lcom/sample/model/TestPojo;
+    Code:
+      stack=1, locals=2, args_size=2
+         0: aload_1
+         1: invokeinterface #63,  1           // InterfaceMethod java/util/function/Supplier.get:()Ljava/lang/Object;
+         6: checkcast     #68                 // class com/sample/model/TestPojo
+         9: areturn
+      LineNumberTable:
+        line 55: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      10     0  this   Lorg/lambdamatic/analyzer/IsolatedLambdaBytecodeAnalyzerTest;
+            0      10     1 supplier   Ljava/util/function/Supplier;
+      LocalVariableTypeTable:
+        Start  Length  Slot  Name   Signature
+            0      10     1 supplier   Ljava/util/function/Supplier<Lcom/sample/model/TestPojo;>;
+
+  private static java.lang.Object $deserializeLambda$(java.lang.invoke.SerializedLambda);
+    descriptor: (Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+    flags: ACC_PRIVATE, ACC_STATIC, ACC_SYNTHETIC
+    Code:
+      stack=3, locals=3, args_size=1
+         0: aload_0
+         1: invokevirtual #75                 // Method java/lang/invoke/SerializedLambda.getImplMethodName:()Ljava/lang/String;
+         4: astore_1
+         5: iconst_m1
+         6: istore_2
+         7: aload_1
+         8: invokevirtual #81                 // Method java/lang/String.hashCode:()I
+        11: lookupswitch  { // 1
+              1818100338: 28
+                 default: 39
+            }
+        28: aload_1
+        29: ldc           #87                 // String <init>
+        31: invokevirtual #88                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+        34: ifeq          39
+        37: iconst_0
+        38: istore_2
+        39: iload_2
+        40: lookupswitch  { // 1
+                       0: 60
+                 default: 135
+            }
+        60: aload_0
+        61: invokevirtual #92                 // Method java/lang/invoke/SerializedLambda.getImplMethodKind:()I
+        64: bipush        8
+        66: if_icmpne     135
+        69: aload_0
+        70: invokevirtual #95                 // Method java/lang/invoke/SerializedLambda.getFunctionalInterfaceClass:()Ljava/lang/String;
+        73: ldc           #98                 // String org/lambdamatic/SerializableSupplier
+        75: invokevirtual #100                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+        78: ifeq          135
+        81: aload_0
+        82: invokevirtual #101                // Method java/lang/invoke/SerializedLambda.getFunctionalInterfaceMethodName:()Ljava/lang/String;
+        85: ldc           #104                // String get
+        87: invokevirtual #100                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+        90: ifeq          135
+        93: aload_0
+        94: invokevirtual #105                // Method java/lang/invoke/SerializedLambda.getFunctionalInterfaceMethodSignature:()Ljava/lang/String;
+        97: ldc           #108                // String ()Ljava/lang/Object;
+        99: invokevirtual #100                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+       102: ifeq          135
+       105: aload_0
+       106: invokevirtual #109                // Method java/lang/invoke/SerializedLambda.getImplClass:()Ljava/lang/String;
+       109: ldc           #112                // String com/sample/model/TestPojo
+       111: invokevirtual #100                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+       114: ifeq          135
+       117: aload_0
+       118: invokevirtual #113                // Method java/lang/invoke/SerializedLambda.getImplMethodSignature:()Ljava/lang/String;
+       121: ldc           #116                // String ()V
+       123: invokevirtual #100                // Method java/lang/Object.equals:(Ljava/lang/Object;)Z
+       126: ifeq          135
+       129: invokedynamic #117,  0            // InvokeDynamic #0:get:()Lorg/lambdamatic/SerializableSupplier;
+       134: areturn
+       135: new           #118                // class java/lang/IllegalArgumentException
+       138: dup
+       139: ldc           #120                // String Invalid lambda deserialization
+       141: invokespecial #122                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+       144: athrow
+      LineNumberTable:
+        line 1: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+      StackMapTable: number_of_entries = 4
+        frame_type = 253 /* append */
+          offset_delta = 28
+          locals = [ class java/lang/String, int ]
+        frame_type = 10 /* same */
+        frame_type = 20 /* same */
+        frame_type = 249 /* chop */
+          offset_delta = 74
+}
+SourceFile: "IsolatedLambdaBytecodeAnalyzerTest.java"
+BootstrapMethods:
+  0: #135 invokestatic java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+    Method arguments:
+      #136 ()Ljava/lang/Object;
+      #138 newinvokespecial com/sample/model/TestPojo."<init>":()V
+      #140 ()Lcom/sample/model/TestPojo;
+      #141 1
+InnerClasses:
+     public static final #147= #143 of #145; //Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles

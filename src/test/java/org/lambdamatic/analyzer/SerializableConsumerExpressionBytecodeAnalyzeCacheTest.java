@@ -37,7 +37,7 @@ import net.jcip.annotations.NotThreadSafe;
  * @author Xavier Coulon
  */
 @NotThreadSafe
-public class SerializableConsumerBytecodeAnalyzeCacheTest {
+public class SerializableConsumerExpressionBytecodeAnalyzeCacheTest {
 
   private LambdaExpressionAnalyzerListenerImpl listener;
 
@@ -68,9 +68,9 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
     final LambdaExpression lambdaExpression1 = getLambdaExpression();
     // then
     final MethodInvocation fieldEqualsJohnMethod =
-        new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("john"));
+        new MethodInvocation(new FieldAccess(e, "field", String.class), Object_equals, new StringLiteral("john"));
     final MethodInvocation fieldEqualsJackMethod =
-        new MethodInvocation(new FieldAccess(e, "field"), Object_equals, new StringLiteral("jack"));
+        new MethodInvocation(new FieldAccess(e, "field", String.class), Object_equals, new StringLiteral("jack"));
     final CompoundExpression infixExpression = new CompoundExpression(
         CompoundExpressionOperator.CONDITIONAL_OR, fieldEqualsJohnMethod, fieldEqualsJackMethod);
     final LambdaExpression nestedExpression =
@@ -105,9 +105,9 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
     final LambdaExpression lambdaExpression1 = getLambdaExpression("john1", "jack1");
     // then
     final MethodInvocation fieldEqualsJohn1Method = new MethodInvocation(
-        new FieldAccess(e, "field"), Object_equals, new StringLiteral("john1"));
+        new FieldAccess(e, "field", String.class), Object_equals, new StringLiteral("john1"));
     final MethodInvocation fieldEqualsJack1Method = new MethodInvocation(
-        new FieldAccess(e, "field"), Object_equals, new StringLiteral("jack1"));
+        new FieldAccess(e, "field", String.class), Object_equals, new StringLiteral("jack1"));
     final CompoundExpression infixExpression = new CompoundExpression(
         CompoundExpressionOperator.CONDITIONAL_OR, fieldEqualsJohn1Method, fieldEqualsJack1Method);
     final LambdaExpression nestedExpression1 =
@@ -124,9 +124,9 @@ public class SerializableConsumerBytecodeAnalyzeCacheTest {
     final LambdaExpression lambdaExpression2 = getLambdaExpression("john2", "jack2");
     // then
     final MethodInvocation fieldEqualsJohn2Method = new MethodInvocation(
-        new FieldAccess(e, "field"), Object_equals, new StringLiteral("john2"));
+        new FieldAccess(e, "field", String.class), Object_equals, new StringLiteral("john2"));
     final MethodInvocation fieldEqualsJack2Method = new MethodInvocation(
-        new FieldAccess(e, "field"), Object_equals, new StringLiteral("jack2"));
+        new FieldAccess(e, "field", String.class), Object_equals, new StringLiteral("jack2"));
     final CompoundExpression infixExpression2 = new CompoundExpression(
         CompoundExpressionOperator.CONDITIONAL_OR, fieldEqualsJohn2Method, fieldEqualsJack2Method);
     final LambdaExpression nestedExpression2 =

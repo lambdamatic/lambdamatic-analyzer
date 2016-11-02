@@ -10,7 +10,6 @@ package org.lambdamatic.analyzer.ast.node;
 
 import java.lang.reflect.Field;
 
-import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.lambdamatic.analyzer.utils.ClassUtils;
 
 /**
@@ -49,7 +48,7 @@ public class ExpressionFactory {
       return new StringLiteral(value.toString());
     } else if (value instanceof Field) {
       final Field field = (Field) value;
-      return new FieldAccess(new ClassLiteral(field.getDeclaringClass()), field.getName());
+      return new FieldAccess(new ClassLiteral(field.getDeclaringClass()), field.getName(), field.getType());
     } else if (value.getClass().isArray()) {
       final Class<?> componentType = value.getClass().getComponentType();
       // value is already an array of Expression, just need to wrap it in an ArrayVariable
@@ -78,20 +77,16 @@ public class ExpressionFactory {
   public static Expression getLiteral(final NumberLiteral numberLiteral,
       final String targetTypeName) {
     final Number value = numberLiteral.getValue();
-    try {
-      final Class<?> targetClass = ClassUtils.getClass(targetTypeName);
-      if (targetClass.equals(Character.class) || targetClass.equals(char.class)) {
-        return new CharacterLiteral((char) value.intValue());
-      } else if (targetClass.equals(boolean.class) || targetClass.equals(Boolean.class)) {
-        if (value.intValue() == 0) {
-          return new BooleanLiteral(false);
-        }
-        return new BooleanLiteral(true);
+    final Class<?> targetClass = ClassUtils.getClass(targetTypeName);
+    if (targetClass.equals(Character.class) || targetClass.equals(char.class)) {
+      return new CharacterLiteral((char) value.intValue());
+    } else if (targetClass.equals(boolean.class) || targetClass.equals(Boolean.class)) {
+      if (value.intValue() == 0) {
+        return new BooleanLiteral(false);
       }
-      return numberLiteral;
-    } catch (final ClassNotFoundException e) {
-      throw new AnalyzeException("Failed to retrieve class with name " + targetTypeName, e);
+      return new BooleanLiteral(true);
     }
+    return numberLiteral;
   }
 
 }

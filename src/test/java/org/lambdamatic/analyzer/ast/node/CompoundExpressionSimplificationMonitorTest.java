@@ -26,11 +26,11 @@ public class CompoundExpressionSimplificationMonitorTest {
     // given
     final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
     final MethodInvocation equalsFooMethod = new MethodInvocation(
-        new FieldAccess(testPojo, "field"), Object_equals, new StringLiteral("foo"));
+        new FieldAccess(testPojo, "field", String.class), Object_equals, new StringLiteral("foo"));
     final MethodInvocation equalsBarMethod = new MethodInvocation(
-        new FieldAccess(testPojo, "field"), Object_equals, new StringLiteral("bar"));
+        new FieldAccess(testPojo, "field", String.class), Object_equals, new StringLiteral("bar"));
     final MethodInvocation equalsBazMethod = new MethodInvocation(
-        new FieldAccess(testPojo, "field"), Object_equals, new StringLiteral("baz"));
+        new FieldAccess(testPojo, "field", String.class), Object_equals, new StringLiteral("baz"));
     final CompoundExpression expression =
         new CompoundExpression(1, CompoundExpressionOperator.CONDITIONAL_OR,
             new CompoundExpression(CompoundExpressionOperator.CONDITIONAL_AND, equalsFooMethod,

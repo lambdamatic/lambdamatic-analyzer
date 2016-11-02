@@ -39,7 +39,7 @@ public class CapturedArgumentsEvaluatorTest {
     final MethodInvocation equalsMethodInvocation = new MethodInvocation(testPojo, Object_equals,
         new MethodInvocation(new CapturedArgumentRef(0, TestPojo.class), TestPojo_getStringValue));
     final MethodInvocation equalsFieldAccess = new MethodInvocation(testPojo, Object_equals,
-        new FieldAccess(new CapturedArgumentRef(0, TestPojo.class), "field"));
+        new FieldAccess(new CapturedArgumentRef(0, TestPojo.class), "field", String.class));
     final CompoundExpression expression = new CompoundExpression(
         CompoundExpressionOperator.CONDITIONAL_OR, equalsMethodInvocation, equalsFieldAccess);
     // when

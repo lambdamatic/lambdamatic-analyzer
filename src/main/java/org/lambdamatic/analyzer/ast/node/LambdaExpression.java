@@ -66,6 +66,15 @@ public class LambdaExpression extends Expression {
   }
 
   /**
+   * Constructor for method references.
+   * 
+   * @param statement The {@link Statement} defined in the Lambda Expression.
+   */
+  public LambdaExpression(final Statement statement) {
+    this(Arrays.asList(statement), null, null);
+  }
+
+  /**
    * Constructor.
    * 
    * @param statements The {@link List} of {@link Statement} defined in the Lambda Expression.
@@ -151,7 +160,7 @@ public class LambdaExpression extends Expression {
 
   @Override
   public String toString() {
-    return this.argumentName + " -> {"
+    return (this.argumentName != null ? this.argumentName : "()") + " -> {"
         + String.join(" ", this.body.stream().map(s -> s.toString()).collect(Collectors.toList()))
         + "}";
   }

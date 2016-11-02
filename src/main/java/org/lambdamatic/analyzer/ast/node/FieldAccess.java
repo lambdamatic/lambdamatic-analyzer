@@ -24,6 +24,8 @@ public class FieldAccess extends ComplexExpression {
   /** the name of the accessed field. */
   private final String fieldName;
 
+  private final Class<?> javaType;
+
   /**
    * Full constructor
    * <p>
@@ -32,9 +34,10 @@ public class FieldAccess extends ComplexExpression {
    * 
    * @param sourceExpression the source containing the field to access
    * @param fieldName the name of the accessed field
+   * @param javaType the type of the fieldType 
    */
-  public FieldAccess(final Expression sourceExpression, final String fieldName) {
-    this(sourceExpression, fieldName, false);
+  public FieldAccess(final Expression sourceExpression, final String fieldName, final Class<?> javaType) {
+    this(sourceExpression, fieldName, javaType, false);
   }
 
   /**
@@ -45,11 +48,12 @@ public class FieldAccess extends ComplexExpression {
    * 
    * @param sourceExpression the source containing the field to access
    * @param fieldName the name of the accessed field
+   * @param javaType the type of the field 
    * @param inverted if this {@link FieldAccess} expression is inverted
    */
-  public FieldAccess(final Expression sourceExpression, final String fieldName,
+  public FieldAccess(final Expression sourceExpression, final String fieldName, final Class<?> javaType,
       final boolean inverted) {
-    this(generateId(), sourceExpression, fieldName, inverted);
+    this(generateId(), sourceExpression, fieldName, javaType, inverted);
   }
 
   /**
@@ -58,13 +62,15 @@ public class FieldAccess extends ComplexExpression {
    * @param id the synthetic id of this {@link Expression}.
    * @param sourceExpression the source {@link Expression} from which the field is accessed.
    * @param fieldName the name of the field to access
+   * @param javaType the type of the field
    * @param inverted the inversion flag of this {@link Expression}.
    */
-  public FieldAccess(final int id, final Expression sourceExpression, final String fieldName,
+  public FieldAccess(final int id, final Expression sourceExpression, final String fieldName, final Class<?> javaType,
       final boolean inverted) {
     super(id, inverted);
     setSourceExpression(sourceExpression);
     this.fieldName = fieldName;
+    this.javaType = javaType;
   }
 
   private void setSourceExpression(final Expression expression) {
@@ -105,7 +111,7 @@ public class FieldAccess extends ComplexExpression {
 
   @Override
   public FieldAccess duplicate(int id) {
-    return new FieldAccess(id, getSource().duplicate(), getFieldName(), isInverted());
+    return new FieldAccess(id, getSource().duplicate(), this.fieldName, this.javaType, isInverted());
   }
 
   /**
@@ -115,7 +121,7 @@ public class FieldAccess extends ComplexExpression {
   @Override
   public FieldAccess inverse() {
     if (getJavaType() == Boolean.class || getJavaType() == boolean.class) {
-      return new FieldAccess(this.source, this.fieldName, !isInverted());
+      return new FieldAccess(this.source, this.fieldName, this.javaType, !isInverted());
     }
     throw new UnsupportedOperationException("Field access on '" + getFieldName()
         + "' with Java type '" + getJavaType() + "' does not support inversion.");
@@ -128,12 +134,7 @@ public class FieldAccess extends ComplexExpression {
 
   @Override
   public Class<?> getJavaType() {
-    try {
-      return this.source.getJavaType().getField(this.fieldName).getType();
-    } catch (NoSuchFieldException | SecurityException e) {
-      throw new AnalyzeException(
-          "Failed to retrieve field '" + this.fieldName + "' in " + this.source, e);
-    }
+     return this.javaType;
   }
 
   /**
@@ -166,16 +167,22 @@ public class FieldAccess extends ComplexExpression {
     return this.source.toString() + "." + this.fieldName;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
-    result = prime * result + ((this.source == null) ? 0 : this.source.hashCode());
-    result = prime * result + ((this.fieldName == null) ? 0 : this.fieldName.hashCode());
+    result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());
+    result = prime * result + ((javaType == null) ? 0 : javaType.hashCode());
+    result = prime * result + ((source == null) ? 0 : source.hashCode());
     return result;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -184,26 +191,32 @@ public class FieldAccess extends ComplexExpression {
     if (obj == null) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof FieldAccess)) {
       return false;
     }
     FieldAccess other = (FieldAccess) obj;
-    if (this.source == null) {
-      if (other.source != null) {
-        return false;
-      }
-    } else if (!this.source.equals(other.source)) {
-      return false;
-    }
-    if (this.fieldName == null) {
+    if (fieldName == null) {
       if (other.fieldName != null) {
         return false;
       }
-    } else if (!this.fieldName.equals(other.fieldName)) {
+    } else if (!fieldName.equals(other.fieldName)) {
+      return false;
+    }
+    if (javaType == null) {
+      if (other.javaType != null) {
+        return false;
+      }
+    } else if (!javaType.equals(other.javaType)) {
+      return false;
+    }
+    if (source == null) {
+      if (other.source != null) {
+        return false;
+      }
+    } else if (!source.equals(other.source)) {
       return false;
     }
     return true;
   }
 
 }
-

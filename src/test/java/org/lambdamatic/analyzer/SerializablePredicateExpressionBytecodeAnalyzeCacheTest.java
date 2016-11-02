@@ -29,7 +29,7 @@ import com.sample.model.TestPojo;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class SerializablePredicateBytecodeAnalyzeCacheTest {
+public class SerializablePredicateExpressionBytecodeAnalyzeCacheTest {
 
   private LambdaExpressionAnalyzerListenerImpl listener;
 

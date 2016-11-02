@@ -18,7 +18,6 @@ import java.util.function.Consumer;
  */
 @FunctionalInterface
 public interface SerializableConsumer<T> extends Consumer<T>, Serializable {
-  // this function interface has no extra method but is serializable.
-
+  // this functional interface has no extra method but is serializable.
 }
 

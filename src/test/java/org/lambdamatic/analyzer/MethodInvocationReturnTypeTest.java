@@ -14,9 +14,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.lambdamatic.testutils.JavaMethods.List_get;
 import static org.lambdamatic.testutils.JavaMethods.Map_get;
 import static org.lambdamatic.testutils.JavaMethods.Object_equals;
+import static org.lambdamatic.testutils.JavaMethods.String_equals;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.lambdamatic.SerializableConsumer;
@@ -59,13 +62,13 @@ public class MethodInvocationReturnTypeTest {
     final LambdaExpression resultExpression = analyzer.analyzeExpression(expression);
     // then
     final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
-    final FieldAccess e_dot_elementList = new FieldAccess(testPojo, "elementList");
+    final FieldAccess e_dot_elementList = new FieldAccess(testPojo, "elementList", List.class);
     final MethodInvocation e_dot_elementList_dot_get0 =
         new MethodInvocation(e_dot_elementList, List_get, new NumberLiteral(0));
     final FieldAccess e_dot_elementList_dot_get0_dot_field =
-        new FieldAccess(e_dot_elementList_dot_get0, "field");
+        new FieldAccess(e_dot_elementList_dot_get0, "field", String.class);
     final Expression expected = new MethodInvocation(e_dot_elementList_dot_get0_dot_field,
-        Object_equals, new StringLiteral("foo"));
+        String_equals, new StringLiteral("foo"));
     // verification
     LOGGER.info("Result: {}", resultExpression);
     assertThat(resultExpression.getBody()).containsExactly(new ExpressionStatement(expected));
@@ -87,11 +90,11 @@ public class MethodInvocationReturnTypeTest {
     final LambdaExpression resultExpression = analyzer.analyzeExpression(expression);
     // then
     final LocalVariable testPojo = new LocalVariable(0, "t", TestPojo.class);
-    final FieldAccess e_dot_elementMap = new FieldAccess(testPojo, "elementMap");
+    final FieldAccess e_dot_elementMap = new FieldAccess(testPojo, "elementMap", Map.class);
     final MethodInvocation e_dot_elementList_dot_getFoo =
         new MethodInvocation(e_dot_elementMap, Map_get, new StringLiteral("foo"));
     final FieldAccess e_dot_elementList_dot_getFoo_dot_field =
-        new FieldAccess(e_dot_elementList_dot_getFoo, "field");
+        new FieldAccess(e_dot_elementList_dot_getFoo, "field", String.class);
     final Expression expected = new MethodInvocation(e_dot_elementList_dot_getFoo_dot_field,
         Object_equals, new StringLiteral("foo"));
     // verification

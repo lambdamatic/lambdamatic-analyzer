@@ -40,6 +40,15 @@ public class ClassLiteral extends ObjectInstance {
   }
 
   /**
+   * Duplicates {@code this} {@link Expression} and without any specific {@code id}.
+   * 
+   * @return the duplicate {@link Expression}.
+   */
+  public ClassLiteral duplicate() {
+    return duplicate(generateId());
+  }
+
+  /**
    * {@inheritDoc}
    * 
    * @see org.lambdamatic.analyzer.ast.node.Expression#duplicate(int)

@@ -8,9 +8,6 @@
 
 package org.lambdamatic.analyzer.ast;
 
-import static org.lambdamatic.analyzer.ast.node.Expression.ExpressionType.CAPTURED_ARGUMENT_REF;
-import static org.lambdamatic.analyzer.ast.node.Expression.ExpressionType.LOCAL_VARIABLE;
-
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -26,6 +23,7 @@ import org.lambdamatic.analyzer.ast.node.FieldAccess;
 import org.lambdamatic.analyzer.ast.node.LambdaExpression;
 import org.lambdamatic.analyzer.ast.node.MethodInvocation;
 import org.lambdamatic.analyzer.exception.AnalyzeException;
+import org.lambdamatic.analyzer.utils.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +65,7 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
   public boolean visitMethodInvocationExpression(final MethodInvocation methodInvocation) {
     // only methods *not* using (unresolved) Captured Arg reference or Local Variable can be
     // evaluated
-    if (methodInvocation.anyElementMatches(CAPTURED_ARGUMENT_REF)
-        || methodInvocation.anyElementMatches(LOCAL_VARIABLE)) {
+    if (!methodInvocation.canEvaluate()) {
       return true;
     }
     final Object replacement = methodInvocation.evaluate();
@@ -77,7 +74,7 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
       parentExpression.replaceElement(methodInvocation,
           ExpressionFactory.getExpression(replacement));
     }
-    return false;
+    return true;
   }
 
   @Override

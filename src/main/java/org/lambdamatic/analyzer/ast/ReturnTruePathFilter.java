@@ -49,8 +49,11 @@ public class ReturnTruePathFilter extends StatementVisitor {
           getReturnStmts().add(returnStatement);
         }
         break;
+      case STRING_LITERAL:
       case COMPOUND:
       case METHOD_INVOCATION:
+      case METHOD_REFERENCE:
+      case OBJECT_INSTANCIATION:
       case FIELD_ACCESS:
         getReturnStmts().add(returnStatement);
         break;

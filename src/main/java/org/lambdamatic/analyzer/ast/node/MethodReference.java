@@ -8,17 +8,13 @@
 
 package org.lambdamatic.analyzer.ast.node;
 
-import static org.lambdamatic.analyzer.ast.node.Expression.ExpressionType.CAPTURED_ARGUMENT_REF;
-import static org.lambdamatic.analyzer.ast.node.Expression.ExpressionType.LOCAL_VARIABLE;
-
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.lambdamatic.analyzer.exception.AnalyzeException;
 import org.lambdamatic.analyzer.utils.ReflectionUtils;
@@ -29,48 +25,36 @@ import org.lambdamatic.analyzer.utils.ReflectionUtils;
  * @author Xavier Coulon
  *
  */
-public class MethodInvocation extends ComplexExpression {
+public class MethodReference extends ComplexExpression {
 
-  /** the expression on which the method call is applied (may change if evaluated). */
+  /** the class on which the method call is applied (may change if evaluated). */
   private Expression source;
 
   /**
-   * the underlying Java {@link Method}.
+   * the underlying Java {@link Method} or {@link Constructor} that is called.
    */
-  private final Method javaMethod;
-
-  /** the arguments passed as parameters during the call. */
-  private final List<Expression> arguments;
+  private final Executable javaMethod;
 
   /**
    * the actual return type (preserving data from generics if available).
    */
   private final Class<?> returnType;
 
+  /** the optional captured arguments retrieved while analyzing the associated method call. */
+  private List<CapturedArgument> capturedArguments;
+
   /**
    * Full constructor.
    * 
    * @param sourceExpression the expression on which the method call is applied.
    * @param javaMethod the name of the called method.
-   * @param arguments the arguments passed as parameters during the call.
+   * @param capturedArguments the optional captured arguments retrieved while analyzing the
+   *        associated method call
    */
-  public MethodInvocation(final Expression sourceExpression, final Method javaMethod,
-      final Expression... arguments) {
-    this(sourceExpression, javaMethod, ReflectionUtils.getReturnType(javaMethod),
-        Arrays.asList(arguments));
-  }
-
-  /**
-   * Full constructor.
-   * 
-   * @param sourceExpression the expression on which the method call is applied
-   * @param javaMethod the actual {@link Method} or {@link Constructor}
-   * @param returnType the returned Java type of the underlying method
-   * @param arguments the arguments passed as parameters during the call
-   */
-  public MethodInvocation(final Expression sourceExpression, final Method javaMethod,
-      final Class<?> returnType, final List<Expression> arguments) {
-    this(generateId(), sourceExpression, javaMethod, returnType, arguments, false);
+  public MethodReference(final Expression sourceExpression, final Executable javaMethod,
+      final List<CapturedArgument> capturedArguments) {
+    this(generateId(), sourceExpression, javaMethod, ReflectionUtils.getReturnType(javaMethod),
+        capturedArguments, false);
   }
 
   /**
@@ -79,19 +63,19 @@ public class MethodInvocation extends ComplexExpression {
    * @param id the synthetic id of this {@link Expression}
    * @param sourceExpression the expression on which the method call is applied
    * @param javaMethod the actual {@link Method} or {@link Constructor}
+   * @param capturedArguments the optional captured arguments retrieved while analyzing the
+   *        associated method call
    * @param returnType the returned Java type of the underlying method
-   * @param arguments the arguments passed as parameters during the call
    * @param inverted flag to indicate if this expression is inverted
    */
-  public MethodInvocation(final int id, final Expression sourceExpression,
-      final Method javaMethod, final Class<?> returnType, final List<Expression> arguments,
-      final boolean inverted) {
+  public MethodReference(final int id, final Expression sourceExpression,
+      final Executable javaMethod, final Class<?> returnType,
+      final List<CapturedArgument> capturedArguments, final boolean inverted) {
     super(id, inverted);
     setSourceExpression(sourceExpression);
     this.javaMethod = javaMethod;
     this.returnType = returnType;
-    this.arguments = arguments;
-    this.arguments.stream().forEach(e -> e.setParent(this));
+    this.capturedArguments = capturedArguments;
   }
 
   private void setSourceExpression(final Expression sourceExpression) {
@@ -100,20 +84,19 @@ public class MethodInvocation extends ComplexExpression {
   }
 
   @Override
-  public MethodInvocation duplicate(int id) {
-    return new MethodInvocation(id, getSource().duplicate(), this.javaMethod, this.returnType,
-        Expression.duplicateExpressions(this.arguments), isInverted());
+  public MethodReference duplicate(int id) {
+    return new MethodReference(id, getSource().duplicate(), this.javaMethod, this.returnType,
+        this.capturedArguments, isInverted());
   }
 
   @Override
   public ExpressionType getExpressionType() {
-    return ExpressionType.METHOD_INVOCATION;
+    return ExpressionType.METHOD_REFERENCE;
   }
 
   @Override
   public boolean anyElementMatches(ExpressionType type) {
-    return this.source.anyElementMatches(type)
-        || this.arguments.stream().anyMatch(a -> a.anyElementMatches(type));
+    return this.source.anyElementMatches(type);
   }
 
   /**
@@ -155,41 +138,20 @@ public class MethodInvocation extends ComplexExpression {
   }
 
   /**
-   * @return the arguments passed during the method call.
-   */
-  public List<Expression> getArguments() {
-    return this.arguments;
-  }
-
-  /**
-   * Looks-up the argument with the given {@code index} and returns its value.
-   * 
-   * @param index the index of the argument to look-up
-   * @return the {@link Expression#getValue()} of the selected argument
-   */
-  public Object getArgumentValue(final int index) {
-    return this.arguments.get(index).getValue();
-  }
-
-  /**
-   * @return the underlying Java {@link Method}.
+   * @return the underlying Java {@link Method} or {@link Constructor}.
    * @throws AnalyzeException if not method was found.
    */
-  public Method getJavaMethod() {
+  public Executable getJavaMethod() {
     return this.javaMethod;
   }
 
   @Override
   public int getNumberOfBytecodeInstructions() {
-    int length = 1 + this.getSource().getNumberOfBytecodeInstructions();
-    for (Expression arg : this.arguments) {
-      length += arg.getNumberOfBytecodeInstructions();
-    }
-    return length;
+    return 1 + this.getSource().getNumberOfBytecodeInstructions();
   }
 
   /**
-   * Will attempt to evaluate this {@link MethodInvocation} and return its result, even if the
+   * Will attempt to evaluate this {@link MethodReference} and return its result, even if the
    * arguments contains {@link CapturedArgument}.
    * 
    * @return the underlying Java method result.
@@ -197,18 +159,16 @@ public class MethodInvocation extends ComplexExpression {
    */
   public Object evaluate() {
     final List<Object> args = new ArrayList<>();
-    final Class<?>[] argTypes = new Class<?>[this.arguments.size()];
     final Object source = this.source.getValue();
     try {
-      for (int i = 0; i < this.arguments.size(); i++) {
-        final Object methodArgValue = this.arguments.get(i).getValue();
-        args.add(methodArgValue);
-        argTypes[i] = this.arguments.get(i).getJavaType();
-      }
       this.javaMethod.setAccessible(true);
-      return this.javaMethod.invoke(source, args.toArray());
+      if (this.javaMethod instanceof Constructor) {
+        return ((Constructor<?>) this.javaMethod).newInstance(args.toArray());
+      }
+      return ((Method) this.javaMethod).invoke(source, args.toArray());
 
-    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+        | InstantiationException e) {
       throw new AnalyzeException(
           "Failed to invoke method '" + this.javaMethod.getName() + "' on '" + source + "'", e);
     }
@@ -226,32 +186,25 @@ public class MethodInvocation extends ComplexExpression {
 
   @Override
   public void accept(final ExpressionVisitor visitor) {
-    for (Expression arg : this.arguments) {
-      arg.accept(visitor);
-    }
     this.source.accept(visitor);
     visitor.visit(this);
   }
 
   /**
    * Replace the given {@code oldArgumoldExpressionent} with the given {@code newExpression} if it
-   * is part of this {@link MethodInvocation} arguments or if it is the source.
+   * is part of this {@link MethodReference} arguments or if it is the source.
    * 
    */
   public void replaceElement(final Expression oldExpression, final Expression newExpression) {
-    final int oldExpressionIndex = this.arguments.indexOf(oldExpression);
-    if (oldExpressionIndex > -1) {
-      this.arguments.set(oldExpressionIndex, newExpression);
-      newExpression.setParent(this);
-    } else if (oldExpression == this.source) {
+    if (oldExpression == this.source) {
       setSourceExpression(newExpression);
     }
   }
 
   @Override
-  public MethodInvocation inverse() {
-    return new MethodInvocation(generateId(), this.source, this.javaMethod, this.returnType,
-        Expression.duplicateExpressions(this.arguments), !isInverted());
+  public MethodReference inverse() {
+    return new MethodReference(generateId(), this.source, this.javaMethod, this.returnType,
+        this.capturedArguments, !isInverted());
   }
 
   @Override
@@ -261,10 +214,11 @@ public class MethodInvocation extends ComplexExpression {
 
   @Override
   public String toString() {
-    final List<String> args =
-        this.arguments.stream().map(Expression::toString).collect(Collectors.toList());
-    return (isInverted() ? "!" : "") + this.source.toString() + '.' + this.javaMethod.getName()
-        + "(" + String.join(", ", args) + ")";
+    if (this.javaMethod instanceof Constructor) {
+      return (isInverted() ? "!" : "") + this.source.getJavaType().getName() + "::new";
+    }
+    return (isInverted() ? "!" : "") + this.source.getJavaType().getName() + "::"
+        + this.javaMethod.getName();
   }
 
   @Override
@@ -272,7 +226,6 @@ public class MethodInvocation extends ComplexExpression {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
-    result = prime * result + ((this.arguments == null) ? 0 : this.arguments.hashCode());
     result = prime * result + (isInverted() ? 1231 : 1237);
     result = prime * result + ((this.javaMethod == null) ? 0 : this.javaMethod.hashCode());
     result = prime * result + ((this.source == null) ? 0 : this.source.hashCode());
@@ -290,14 +243,7 @@ public class MethodInvocation extends ComplexExpression {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    MethodInvocation other = (MethodInvocation) obj;
-    if (this.arguments == null) {
-      if (other.arguments != null) {
-        return false;
-      }
-    } else if (!this.arguments.equals(other.arguments)) {
-      return false;
-    }
+    MethodReference other = (MethodReference) obj;
     if (isInverted() != other.isInverted()) {
       return false;
     }
@@ -322,7 +268,7 @@ public class MethodInvocation extends ComplexExpression {
   }
 
   /**
-   * Deletes this {@link MethodInvocation} from the Expression tree.
+   * Deletes this {@link MethodReference} from the Expression tree.
    */
   public void delete() {
     // replace this MethodElement with the source expression if the parent exists
@@ -341,18 +287,7 @@ public class MethodInvocation extends ComplexExpression {
    *         <code>false</code> otherwise.
    */
   public boolean canEvaluate() {
-    if (anyElementMatches(CAPTURED_ARGUMENT_REF) || anyElementMatches(LOCAL_VARIABLE)) {
-      return false;
-    }
-    // also, if the number of arguments and their types matches the underlying Java method signature
-    if (this.arguments.size() != this.javaMethod.getParameterTypes().length) {
-      return false;
-    }
-    return IntStream.iterate(0, i -> i + 1).limit(this.arguments.size()).allMatch(i -> {
-      final Class<?> argumentType = this.arguments.get(i).getJavaType();
-      final Class<?> methodParameterType = this.javaMethod.getParameterTypes()[i];
-      return argumentType.equals(methodParameterType);
-    });
+    return false;
   }
 
 }

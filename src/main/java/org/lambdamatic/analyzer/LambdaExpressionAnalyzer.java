@@ -138,16 +138,10 @@ public class LambdaExpressionAnalyzer {
             serializedLambda.getFunctionalInterfaceMethodSignature());
         LOGGER.debug(" Lambda Implementation: {}.{} ({})", serializedLambda.getImplClass(),
             serializedLambda.getImplMethodName(), serializedLambda.getImplMethodSignature());
-        IntStream
-            .range(0,
-                serializedLambda.getCapturedArgCount())
-            .forEach(
-                i -> LOGGER
-                    .debug(
-                        "  with Captured Arg(" + i + "): '" + serializedLambda.getCapturedArg(i)
-                            + ((serializedLambda.getCapturedArg(i) != null) ? "' ("
-                                + serializedLambda.getCapturedArg(i).getClass().getName() + ")"
-                                : "")));
+        IntStream.range(0, serializedLambda.getCapturedArgCount())
+            .forEach(i -> LOGGER.debug("  with Captured Arg(" + i + "): '"
+                + serializedLambda.getCapturedArg(i) + ((serializedLambda.getCapturedArg(i) != null)
+                    ? "' (" + serializedLambda.getCapturedArg(i).getClass().getName() + ")" : "")));
         return new SerializedLambdaInfo(serializedLambda);
       }
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -180,9 +174,9 @@ public class LambdaExpressionAnalyzer {
   public LambdaExpression analyzeExpression(final Object lambdaExpression) {
     final SerializedLambdaInfo lambdaInfo = getSerializedLambdaInfo(lambdaExpression);
     final LambdaExpression rawExpression = analyzeExpression(lambdaInfo);
-    final List<Statement> result =
+    final List<Statement> statements =
         evaluateCapturedArguments(rawExpression.getBody(), lambdaInfo.getCapturedArguments());
-    return new LambdaExpression(result, rawExpression.getArgumentType(),
+    return new LambdaExpression(statements, rawExpression.getArgumentType(),
         rawExpression.getArgumentName());
   }
 
@@ -196,7 +190,8 @@ public class LambdaExpressionAnalyzer {
    *         {@code lambdaExpression}.
    * @throws AnalyzeException if the analysis failed.
    */
-  public synchronized LambdaExpression analyzeExpression(final SerializedLambdaInfo serializedLambdaInfo) {
+  public synchronized LambdaExpression analyzeExpression(
+      final SerializedLambdaInfo serializedLambdaInfo) {
     try {
       final String methodImplementationId = serializedLambdaInfo.getImplMethodId();
       if (this.cache.containsKey(methodImplementationId)) {
@@ -223,20 +218,27 @@ public class LambdaExpressionAnalyzer {
    */
   private static LambdaExpression analyzeByteCode(final SerializedLambdaInfo lambdaInfo)
       throws IOException {
-    LOGGER.debug("Analyzing lambda expression bytecode at {}.{}", lambdaInfo.getImplClassName(),
-        lambdaInfo.getImplMethodName());
+    LOGGER.debug("Analyzing lambda expression bytecode at {}.{}", lambdaInfo.getImplClass().getName(),
+        lambdaInfo.getImplMethod().getName());
     final LambdaExpressionReader lambdaExpressionReader = new LambdaExpressionReader();
     final Pair<List<Statement>, List<LocalVariable>> bytecode =
         lambdaExpressionReader.readBytecodeStatements(lambdaInfo);
     final List<LocalVariable> lambdaExpressionArguments = bytecode.getRight();
     final List<Statement> lambdaExpressionStatements = bytecode.getLeft();
-    final List<Statement> processedBlock = lambdaExpressionStatements.stream().map(LambdaExpressionAnalyzer::thinOut)
-        .map(LambdaExpressionAnalyzer::simplify).collect(Collectors.toList());
+    final List<Statement> processedBlock =
+        lambdaExpressionStatements.stream().map(LambdaExpressionAnalyzer::thinOut)
+            .map(LambdaExpressionAnalyzer::simplify).collect(Collectors.toList());
     // first argument that is not a captured argument.
-    final LocalVariable lambdaExpressionArgument =
-        lambdaExpressionArguments.get(lambdaInfo.getCapturedArguments().size());
-    return new LambdaExpression(processedBlock, lambdaExpressionArgument.getJavaType(),
-        lambdaExpressionArgument.getName());
+    final LocalVariable lambdaExpressionArgument = lambdaExpressionArguments.isEmpty() ? null
+        : lambdaExpressionArguments.get(lambdaInfo.getCapturedArguments().size());
+    if (lambdaExpressionArgument == null && processedBlock.size() == 1) {
+      return new LambdaExpression(processedBlock.get(0));
+    } else if (lambdaExpressionArgument != null) {
+      return new LambdaExpression(processedBlock, lambdaExpressionArgument.getJavaType(),
+          lambdaExpressionArgument.getName());
+    }
+    throw new AnalyzeException(
+        "Lambda expression contains multiple statements, but not argument was found.");
   }
 
   private static Statement simplify(final Statement statement) {

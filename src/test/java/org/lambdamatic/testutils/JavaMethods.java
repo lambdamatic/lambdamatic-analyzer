@@ -83,6 +83,8 @@ public class JavaMethods {
   public static Method Character_valueOf;
   
   public static Method Object_equals;
+
+  public static Method String_equals;
   
   public static Method Object_notify;
   
@@ -93,6 +95,7 @@ public class JavaMethods {
   static {
     try {
       Object_equals = Object.class.getMethod("equals", Object.class);
+      String_equals = String.class.getMethod("equals", Object.class);
       Object_notify = Object.class.getMethod("notify");
       Date_getTime = Date.class.getMethod("getTime");
       TestPojo_elementMatch = TestPojo.class.getMethod("elementMatch", SerializablePredicate.class);

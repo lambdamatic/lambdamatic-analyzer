@@ -11,6 +11,7 @@ package org.lambdamatic.analyzer.ast.node;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.lambdamatic.analyzer.exception.AnalyzeException;
@@ -37,9 +38,11 @@ public class ObjectInstanciation extends Expression {
    * </p>
    * 
    * @param instanceType the type of the instance to build
+   * @param arguments the contructor arguments
    */
-  public ObjectInstanciation(final Class<?> instanceType) {
+  public ObjectInstanciation(final Class<?> instanceType, final Expression... arguments) {
     this(generateId(), instanceType, false);
+    setInitArguments(Arrays.asList(arguments));
   }
 
   /**
@@ -145,7 +148,7 @@ public class ObjectInstanciation extends Expression {
 
   @Override
   public String toString() {
-    return this.instanceType.getName() + "(" + this.arguments + ")";
+    return "new " + this.instanceType.getName() + "(" + this.arguments + ")";
   }
 
   /**

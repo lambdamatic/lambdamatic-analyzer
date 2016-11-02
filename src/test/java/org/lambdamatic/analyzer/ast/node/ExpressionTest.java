@@ -188,11 +188,11 @@ public class ExpressionTest {
     final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
     final CompoundExpression primitiveIntValueEquals42Expression =
         new CompoundExpression(CompoundExpressionOperator.EQUALS,
-            new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+            new FieldAccess(var, "primitiveIntValue", int.class), new NumberLiteral(42));
     final CompoundExpression fieldEqualsFooExpression = new CompoundExpression(
-        CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+        CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field", String.class), new StringLiteral("FOO"));
     final CompoundExpression enumPojoEqualsFooExpression =
-        new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo"),
+        new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo", EnumPojo.class),
             new EnumLiteral(EnumPojo.FOO));
     // when
     final CompoundExpression expression =
@@ -213,11 +213,11 @@ public class ExpressionTest {
     final LocalVariable var = new LocalVariable(0, "t", TestPojo.class);
     final CompoundExpression primitiveIntValueEquals42Expression =
         new CompoundExpression(CompoundExpressionOperator.EQUALS,
-            new FieldAccess(var, "primitiveIntValue"), new NumberLiteral(42));
+            new FieldAccess(var, "primitiveIntValue", int.class), new NumberLiteral(42));
     final CompoundExpression fieldEqualsFooExpression = new CompoundExpression(
-        CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field"), new StringLiteral("FOO"));
+        CompoundExpressionOperator.EQUALS, new FieldAccess(var, "field", String.class), new StringLiteral("FOO"));
     final CompoundExpression enumPojoEqualsFooExpression =
-        new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo"),
+        new CompoundExpression(CompoundExpressionOperator.EQUALS, new FieldAccess(var, "enumPojo", EnumPojo.class),
             new EnumLiteral(EnumPojo.FOO));
     // when
     final CompoundExpression expression = new CompoundExpression(
@@ -339,7 +339,7 @@ public class ExpressionTest {
     final MethodInvocation equalsFooMethod =
         new MethodInvocation(testPojo, Object_equals, new StringLiteral("foo"));
     // when
-    final Method javaMethod = equalsFooMethod.getJavaMethod();
+    final Method javaMethod = (Method) equalsFooMethod.getJavaMethod();
     // then
     assertThat(javaMethod).isNotNull();
   }
