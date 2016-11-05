@@ -232,9 +232,8 @@ public class LambdaExpressionReader {
     final boolean isConstructorMethod = lambdaInfo.getImplMethod() instanceof Constructor;
     final boolean isReturnStatement = isConstructorMethod
         || (returnType != null && !returnType.getClassName().equals(void.class.getName()));
-    final Expression source = new ClassLiteral(lambdaInfo.getImplClass());
     final MethodReference methodReference =
-        new MethodReference(source, lambdaInfo.getImplMethod(), lambdaInfo.getCapturedArguments());
+        new MethodReference(lambdaInfo.getImplClass(), lambdaInfo.getImplMethod(), lambdaInfo.getCapturedArguments());
     final Statement lambdaExpressionStatement = isReturnStatement
         ? new ReturnStatement(methodReference) : new ExpressionStatement(methodReference);
     return new Pair<>(Arrays.asList(lambdaExpressionStatement), Collections.emptyList());

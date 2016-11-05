@@ -90,7 +90,7 @@ public class SerializableSupplierExpressionBytecodeAnalyzerTest {
   @Parameters(name = "[{index}] expect {1}")
   public static Object[][] data() throws NoSuchMethodException, SecurityException  {
     return new Object[][] {
-      match(TestPojo::new, new MethodReference(new ClassLiteral(TestPojo.class), TestPojo.class.getConstructor(), Collections.emptyList())),
+      match(TestPojo::new, new MethodReference(TestPojo.class, TestPojo.class.getConstructor(), Collections.emptyList())),
       match(() -> new TestPojo(), new ObjectInstanciation(TestPojo.class)),
     };
   }

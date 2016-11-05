@@ -48,7 +48,7 @@ public class IsolatedLambdaBytecodeAnalyzerTest {
     // then
     LOGGER.info("Result: {}", resultExpression);
     assertThat(resultExpression.getBody()).containsExactly(new ReturnStatement(
-        new MethodReference(new ClassLiteral(TestPojo.class), TestPojo.class.getConstructor(), Collections.emptyList())));
+        new MethodReference(TestPojo.class, TestPojo.class.getConstructor(), Collections.emptyList())));
   }
 
 }

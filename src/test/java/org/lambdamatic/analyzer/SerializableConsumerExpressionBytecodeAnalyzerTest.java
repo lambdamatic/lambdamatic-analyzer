@@ -227,7 +227,7 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
           t.dateValue.getTime();
         }, Arrays.array(e_dot_field_dot_notify, e_dot_dateValue_dot_getTime)),
         matchOnTestPojo(System.out::println,
-            new MethodReference(new ClassLiteral(PrintStream.class),
+            new MethodReference(PrintStream.class,
                 System.out.getClass().getMethod("println", Object.class),
                 java.util.Arrays.asList(new CapturedArgument(System.out)))),
         matchOnTestPojo(t -> System.out.println("bonjour"),
@@ -235,7 +235,7 @@ public class SerializableConsumerExpressionBytecodeAnalyzerTest {
                 System.out.getClass().getMethod("println", String.class),
                 new StringLiteral("bonjour"))),
         matchOnTestInterface(TestInterface::execute,
-            new MethodReference(new ClassLiteral(TestInterface.class),
+            new MethodReference(TestInterface.class,
                 TestInterface.class.getMethod("execute"), Collections.emptyList())),};
   }
 

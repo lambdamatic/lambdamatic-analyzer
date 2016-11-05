@@ -103,8 +103,8 @@ public class SerializableFunctionExpressionBytecodeAnalyzerTest {
   public static Object[][] data() throws NoSuchMethodException, SecurityException  {
     return new Object[][] {
       matchOnTestPojo(t -> "bonjour", new StringLiteral("bonjour")),
-      matchOnString(TestPojo::new, new MethodReference(new ClassLiteral(TestPojo.class), TestPojo.class.getConstructor(String.class), Collections.emptyList())),
-      matchOnString(TestPojo::build, new MethodReference(new ClassLiteral(TestPojo.class), TestPojo.class.getMethod("build", String.class), Collections.emptyList())),
+      matchOnString(TestPojo::new, new MethodReference(TestPojo.class, TestPojo.class.getConstructor(String.class), Collections.emptyList())),
+      matchOnString(TestPojo::build, new MethodReference(TestPojo.class, TestPojo.class.getMethod("build", String.class), Collections.emptyList())),
     };
   }
   

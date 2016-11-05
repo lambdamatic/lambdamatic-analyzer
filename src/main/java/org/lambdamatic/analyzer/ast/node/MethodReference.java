@@ -46,14 +46,14 @@ public class MethodReference extends ComplexExpression {
   /**
    * Full constructor.
    * 
-   * @param sourceExpression the expression on which the method call is applied.
+   * @param targetClass the class on which the method call is applied.
    * @param javaMethod the name of the called method.
    * @param capturedArguments the optional captured arguments retrieved while analyzing the
    *        associated method call
    */
-  public MethodReference(final Expression sourceExpression, final Executable javaMethod,
+  public MethodReference(final Class<?> targetClass, final Executable javaMethod,
       final List<CapturedArgument> capturedArguments) {
-    this(generateId(), sourceExpression, javaMethod, ReflectionUtils.getReturnType(javaMethod),
+    this(generateId(), new ClassLiteral(targetClass), javaMethod, ReflectionUtils.getReturnType(javaMethod),
         capturedArguments, false);
   }
 
