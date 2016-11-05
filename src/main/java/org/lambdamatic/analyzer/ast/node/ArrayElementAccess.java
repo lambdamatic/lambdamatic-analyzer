@@ -75,7 +75,7 @@ public class ArrayElementAccess extends Expression {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.ARRAY_ELEMENT_ACCESS;
   }
 

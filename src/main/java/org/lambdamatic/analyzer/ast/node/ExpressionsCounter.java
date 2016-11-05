@@ -52,7 +52,7 @@ public class ExpressionsCounter extends ExpressionVisitor {
   @Override
   public boolean visit(final Expression expr) {
     // for anything except Local variables, count the expression itself.
-    switch (expr.getExpressionType()) {
+    switch (expr.getType()) {
       case LOCAL_VARIABLE:
       case CAPTURED_ARGUMENT_REF:
         // skip those elements, they can probably not be simplified here

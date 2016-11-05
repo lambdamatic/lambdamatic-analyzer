@@ -59,10 +59,10 @@ public class BooleanLiteral extends ObjectInstance {
   /**
    * {@inheritDoc}
    * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
+   * @see org.lambdamatic.analyzer.ast.node.Expression#getType()
    */
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.BOOLEAN_LITERAL;
   }
 

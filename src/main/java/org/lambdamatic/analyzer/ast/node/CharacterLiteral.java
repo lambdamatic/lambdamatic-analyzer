@@ -45,7 +45,7 @@ public class CharacterLiteral extends ObjectInstance {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.CHARACTER_LITERAL;
   }
 

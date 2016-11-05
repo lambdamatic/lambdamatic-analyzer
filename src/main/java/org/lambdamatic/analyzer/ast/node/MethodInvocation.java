@@ -106,7 +106,7 @@ public class MethodInvocation extends ComplexExpression {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.METHOD_INVOCATION;
   }
 
@@ -218,7 +218,7 @@ public class MethodInvocation extends ComplexExpression {
    * @return the value of {@code this} Expression.
    */
   public Object getValue() {
-    if (this.source.getExpressionType() == ExpressionType.CLASS_LITERAL) {
+    if (this.source.getType() == ExpressionType.CLASS_LITERAL) {
       return evaluate();
     }
     return evaluate();
@@ -271,7 +271,7 @@ public class MethodInvocation extends ComplexExpression {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
+    result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
     result = prime * result + ((this.arguments == null) ? 0 : this.arguments.hashCode());
     result = prime * result + (isInverted() ? 1231 : 1237);
     result = prime * result + ((this.javaMethod == null) ? 0 : this.javaMethod.hashCode());

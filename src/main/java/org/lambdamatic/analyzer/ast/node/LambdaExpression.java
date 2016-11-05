@@ -108,7 +108,7 @@ public class LambdaExpression extends Expression {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.LAMBDA_EXPRESSION;
   }
 
@@ -160,6 +160,12 @@ public class LambdaExpression extends Expression {
 
   @Override
   public String toString() {
+    if (this.body.isEmpty()) {
+      return (this.argumentName != null ? this.argumentName : "()") + " -> {}";
+
+    } else if (this.body.size() == 1) {
+      return (this.argumentName != null ? this.argumentName : "()") + " -> " + body.get(0);
+    }
     return (this.argumentName != null ? this.argumentName : "()") + " -> {"
         + String.join(" ", this.body.stream().map(s -> s.toString()).collect(Collectors.toList()))
         + "}";

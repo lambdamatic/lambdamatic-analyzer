@@ -123,7 +123,7 @@ public abstract class Expression extends Node implements Comparable<Expression> 
   /**
    * @return the {@link ExpressionType} of this {@link Expression}.
    */
-  public abstract ExpressionType getExpressionType();
+  public abstract ExpressionType getType();
 
   /**
    * Checks if any {@link Expression} element of this {@link ComplexExpression} is of the given
@@ -133,7 +133,7 @@ public abstract class Expression extends Node implements Comparable<Expression> 
    * @return {@code true} if any matches, {@code false} otherwise.
    */
   public boolean anyElementMatches(final ExpressionType type) {
-    return getExpressionType() == type;
+    return getType() == type;
   }
 
   /**

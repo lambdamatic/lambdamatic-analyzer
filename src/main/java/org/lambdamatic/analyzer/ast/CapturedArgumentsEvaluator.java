@@ -79,7 +79,7 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
 
   @Override
   public boolean visitFieldAccessExpression(final FieldAccess fieldAccess) {
-    if (fieldAccess.getSource().getExpressionType() == ExpressionType.OBJECT_INSTANCE) {
+    if (fieldAccess.getSource().getType() == ExpressionType.OBJECT_INSTANCE) {
       final String fieldName = fieldAccess.getFieldName();
       try {
         final Object source = fieldAccess.getSource().getValue();
@@ -90,8 +90,8 @@ public class CapturedArgumentsEvaluator extends ExpressionVisitor {
         if (parentExpression != null) {
           final Expression fieldAccessReplacement = ExpressionFactory.getExpression(replacement);
           LOGGER.trace(" replacing {} ({}) with {} ({})", fieldAccess,
-              fieldAccess.getExpressionType(), fieldAccessReplacement,
-              fieldAccessReplacement.getExpressionType());
+              fieldAccess.getType(), fieldAccessReplacement,
+              fieldAccessReplacement.getType());
           parentExpression.replaceElement(fieldAccess, fieldAccessReplacement);
         }
         // no further visiting on this (obsolete) branch of the expression tree.

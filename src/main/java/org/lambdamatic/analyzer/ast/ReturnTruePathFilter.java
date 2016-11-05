@@ -36,7 +36,7 @@ public class ReturnTruePathFilter extends StatementVisitor {
   @Override
   public boolean visitReturnStatement(final ReturnStatement returnStatement) {
     final Expression returnExpression = returnStatement.getExpression();
-    switch (returnExpression.getExpressionType()) {
+    switch (returnExpression.getType()) {
       case BOOLEAN_LITERAL:
         final BooleanLiteral booleanLiteral = (BooleanLiteral) returnExpression;
         if (booleanLiteral.getValue().equals(true)) {
@@ -59,7 +59,7 @@ public class ReturnTruePathFilter extends StatementVisitor {
         break;
       default:
         throw new AnalyzeException(
-            "Unsupported expression type (" + returnExpression.getExpressionType().toString()
+            "Unsupported expression type (" + returnExpression.getType().toString()
                 + ") in return statement '" + returnStatement.toString() + "'");
     }
 

@@ -432,9 +432,9 @@ public class LambdaExpressionReader {
     final List<CapturedArgumentRef> lambdaArgs = new ArrayList<>();
     for (int i = 0; i < argNumber; i++) {
       final Expression expr = operandStack.pollLast();
-      if (expr.getExpressionType() != ExpressionType.CAPTURED_ARGUMENT_REF) {
+      if (expr.getType() != ExpressionType.CAPTURED_ARGUMENT_REF) {
         throw new AnalyzeException("Unexpected argument type when following InvokeDynamic call: "
-            + expr.getExpressionType());
+            + expr.getType());
       }
       lambdaArgs.add((CapturedArgumentRef) expr); // , expr.getValue()
     }
@@ -824,7 +824,7 @@ public class LambdaExpressionReader {
       return new NumberLiteral(-value.intValue());
     } catch (ClassCastException e) {
       throw new AnalyzeException(
-          "Cannot perform the inversion of operand of type " + operand.getExpressionType(), e);
+          "Cannot perform the inversion of operand of type " + operand.getType(), e);
     }
   }
 
@@ -1008,7 +1008,7 @@ public class LambdaExpressionReader {
    * @return the casted operand or the given operand if no cast could be performed
    */
   private static Expression castOperand(final Expression operand, final String targetTypeName) {
-    if (operand.getExpressionType() == ExpressionType.NUMBER_LITERAL) {
+    if (operand.getType() == ExpressionType.NUMBER_LITERAL) {
       return ExpressionFactory.getLiteral((NumberLiteral) operand, targetTypeName);
     }
     return operand;
@@ -1021,7 +1021,7 @@ public class LambdaExpressionReader {
    * @see MethodInvocation#getReturnType()
    */
   private static Class<?> getOperandType(final Expression operand) {
-    if (operand.getExpressionType() == ExpressionType.METHOD_INVOCATION) {
+    if (operand.getType() == ExpressionType.METHOD_INVOCATION) {
       return ((MethodInvocation) operand).getReturnType();
     }
     return operand.getJavaType();
@@ -1036,7 +1036,7 @@ public class LambdaExpressionReader {
    * @throws AnalyzeException when no default {@link Expression} can be provided.
    */
   private static Expression getDefaultComparisonOperand(final Expression expression) {
-    if (expression != null && expression.getExpressionType() == ExpressionType.METHOD_INVOCATION) {
+    if (expression != null && expression.getType() == ExpressionType.METHOD_INVOCATION) {
       final MethodInvocation methodInvocation = (MethodInvocation) expression;
       // if the expression is something like 'a.equals(b)', there's no need to add an extra ' ==
       // true' in the
@@ -1061,7 +1061,7 @@ public class LambdaExpressionReader {
       } else if (methodReturnType.equals(String.class)) {
         return new NullLiteral();
       }
-    } else if (expression != null && expression.getExpressionType() == ExpressionType.FIELD_ACCESS
+    } else if (expression != null && expression.getType() == ExpressionType.FIELD_ACCESS
         && (expression.getJavaType() == Boolean.class
             || expression.getJavaType() == boolean.class)) {
       return new BooleanLiteral(false);

@@ -31,7 +31,7 @@ public abstract class ExpressionVisitor {
    */
   public boolean visit(final Expression expr) {
     if (expr != null) {
-      switch (expr.getExpressionType()) {
+      switch (expr.getType()) {
         case ASSIGNMENT:
           return visitAssignment((Assignment) expr);
         case BOOLEAN_LITERAL:

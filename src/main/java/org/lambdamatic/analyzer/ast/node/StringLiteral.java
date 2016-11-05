@@ -50,7 +50,7 @@ public class StringLiteral extends ObjectInstance {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.STRING_LITERAL;
   }
 

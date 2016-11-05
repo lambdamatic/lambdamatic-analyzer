@@ -20,7 +20,7 @@ public class InstanceOf extends Expression {
   private final Expression expression;
 
   /** The expected expression type. */
-  private final Type type;
+  private final Type expectedType;
 
   /**
    * Full constructor.
@@ -29,10 +29,10 @@ public class InstanceOf extends Expression {
    * </p>
    * 
    * @param expression the expression being evaluated.
-   * @param type the expected expression type.
+   * @param expectedType the expected expression type.
    */
-  public InstanceOf(final Expression expression, final Type type) {
-    this(generateId(), expression, type, false);
+  public InstanceOf(final Expression expression, final Type expectedType) {
+    this(generateId(), expression, expectedType, false);
   }
 
   /**
@@ -47,16 +47,16 @@ public class InstanceOf extends Expression {
       final boolean inverted) {
     super(id, inverted);
     this.expression = expression;
-    this.type = type;
+    this.expectedType = type;
   }
 
   @Override
   public InstanceOf duplicate(int id) {
-    return new InstanceOf(id, getExpression(), getType(), isInverted());
+    return new InstanceOf(id, getExpression(), getExpectedType(), isInverted());
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.INSTANCE_OF;
   }
 
@@ -78,10 +78,10 @@ public class InstanceOf extends Expression {
   }
 
   /**
-   * @return the type.
+   * @return the expected type.
    */
-  public Type getType() {
-    return this.type;
+  public Type getExpectedType() {
+    return this.expectedType;
   }
 
   /**
@@ -91,7 +91,7 @@ public class InstanceOf extends Expression {
    */
   @Override
   public Expression inverse() {
-    return new InstanceOf(generateId(), this.expression, this.type, !isInverted());
+    return new InstanceOf(generateId(), this.expression, this.expectedType, !isInverted());
   }
 
   /**
@@ -111,9 +111,9 @@ public class InstanceOf extends Expression {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((getExpressionType() == null) ? 0 : getExpressionType().hashCode());
+    result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
     result = prime * result + ((this.expression == null) ? 0 : this.expression.hashCode());
-    result = prime * result + ((this.type == null) ? 0 : this.type.hashCode());
+    result = prime * result + ((this.expectedType == null) ? 0 : this.expectedType.hashCode());
     return result;
   }
 
@@ -139,11 +139,11 @@ public class InstanceOf extends Expression {
     } else if (!this.expression.equals(other.expression)) {
       return false;
     }
-    if (this.type == null) {
-      if (other.type != null) {
+    if (this.expectedType == null) {
+      if (other.expectedType != null) {
         return false;
       }
-    } else if (!this.type.equals(other.type)) {
+    } else if (!this.expectedType.equals(other.expectedType)) {
       return false;
     }
     return true;

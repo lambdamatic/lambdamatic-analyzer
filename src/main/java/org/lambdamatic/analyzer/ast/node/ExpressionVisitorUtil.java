@@ -69,8 +69,8 @@ public class ExpressionVisitorUtil {
     }
 
     @Override
-    public ExpressionType getExpressionType() {
-      return this.expression.getExpressionType();
+    public ExpressionType getType() {
+      return this.expression.getType();
     }
 
     @Override

@@ -41,7 +41,7 @@ public class ExpressionTypeMatcher extends ExpressionVisitor {
 
   @Override
   public boolean visit(final Expression expr) {
-    if (expr.getExpressionType() == this.expectedExpressionType) {
+    if (expr.getType() == this.expectedExpressionType) {
       this.matchFound = true;
       return false;
     }

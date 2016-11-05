@@ -193,7 +193,7 @@ public class CompoundExpression extends ComplexExpression {
   public CompoundExpression(final int id, final CompoundExpressionOperator operator,
       final List<Expression> operands, final boolean inverted) {
     super(id, inverted);
-    if (operands.size() == 1 && operands.get(0).getExpressionType() == ExpressionType.COMPOUND) {
+    if (operands.size() == 1 && operands.get(0).getType() == ExpressionType.COMPOUND) {
       final CompoundExpression infixOperand = (CompoundExpression) operands.get(0);
       this.operands = new ArrayList<>(infixOperand.operands);
       this.operator = infixOperand.operator;
@@ -244,10 +244,10 @@ public class CompoundExpression extends ComplexExpression {
   /**
    * {@inheritDoc}
    * 
-   * @see org.lambdamatic.analyzer.ast.node.Expression#getExpressionType()
+   * @see org.lambdamatic.analyzer.ast.node.Expression#getType()
    */
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.COMPOUND;
   }
 
@@ -475,7 +475,7 @@ public class CompoundExpression extends ComplexExpression {
     final long endTime = System.currentTimeMillis();
     LOGGER.debug(" Simplest form for #{}: {} (c={}) in {}ms", simplestForm.getId(),
         simplestForm.toString(), simplestForm.getComplexity(), (endTime - startTime));
-    if (simplestForm.getExpressionType() == ExpressionType.COMPOUND) {
+    if (simplestForm.getType() == ExpressionType.COMPOUND) {
       return ((CompoundExpression) simplestForm).reorderOperands(this);
     }
     return simplestForm;
@@ -644,7 +644,7 @@ public class CompoundExpression extends ComplexExpression {
 
     // check if there are nested InfixExpressions with same operator
     if (this.operands.parallelStream()
-        .anyMatch(o -> o.getExpressionType() == ExpressionType.COMPOUND
+        .anyMatch(o -> o.getType() == ExpressionType.COMPOUND
             && ((CompoundExpression) o).operator == this.operator)) {
       return true;
     }
@@ -754,7 +754,7 @@ public class CompoundExpression extends ComplexExpression {
     final List<Expression> resultOperands = new ArrayList<>();
     boolean match = false;
     for (Expression operand : this.operands) {
-      if (operand.getExpressionType() == ExpressionType.COMPOUND) {
+      if (operand.getType() == ExpressionType.COMPOUND) {
         final CompoundExpression infixOperand = (CompoundExpression) operand;
         if (infixOperand.getOperator() == this.operator) {
           resultOperands.addAll(infixOperand.getOperands());
@@ -799,7 +799,7 @@ public class CompoundExpression extends ComplexExpression {
         continue;
       }
       final List<Expression> simplifiedOperands = this.operands.stream().map(expression -> {
-        if (expression.getExpressionType() == ExpressionType.COMPOUND
+        if (expression.getType() == ExpressionType.COMPOUND
             && ((CompoundExpression) expression).operator == oppositeOperator
             && ((CompoundExpression) expression).contains(operand.inverse())) {
           return ((CompoundExpression) expression).duplicate(getId())
@@ -835,7 +835,7 @@ public class CompoundExpression extends ComplexExpression {
       // removes from 'simplifiedOperands' all expression that
       // match '(a + b)' where 'a' is the operand to match
       final List<Expression> remainingOperands = this.operands.stream()
-          .filter(m -> m.equals(operand) || m.getExpressionType() != ExpressionType.COMPOUND
+          .filter(m -> m.equals(operand) || m.getType() != ExpressionType.COMPOUND
               || ((CompoundExpression) m).getOperator() != oppositeOperator
               || !((CompoundExpression) m).getOperands().contains(operand))
           .collect(Collectors.toList());
@@ -882,27 +882,27 @@ public class CompoundExpression extends ComplexExpression {
     // (because it's obviously repeated multiple times...)
     final Set<Expression> matchOperands = new HashSet<>();
     for (Expression currentOperand : this.operands) {
-      if (currentOperand.getExpressionType() == ExpressionType.COMPOUND) {
+      if (currentOperand.getType() == ExpressionType.COMPOUND) {
         final List<Expression> otherOperands = getOtherOperands(currentOperand);
         for (Expression operandElement : ((CompoundExpression) currentOperand).getOperands()) {
           if (matchOperands.contains(operandElement)) {
             continue;
           }
           boolean anyMatch = otherOperands.stream()
-              .anyMatch(o -> o.getExpressionType() == ExpressionType.COMPOUND
+              .anyMatch(o -> o.getType() == ExpressionType.COMPOUND
                   && ((CompoundExpression) o).getOperator() == oppositeOperator
                   && ((CompoundExpression) o).getOperands().contains(operandElement));
           if (anyMatch) {
             matchOperands.add(operandElement);
             final List<Expression> factorizedOperands = this.operands.stream()
-                .filter(o -> o.getExpressionType() == ExpressionType.COMPOUND
+                .filter(o -> o.getType() == ExpressionType.COMPOUND
                     && ((CompoundExpression) o).getOperator() == oppositeOperator
                     && ((CompoundExpression) o).getOperands().contains(operandElement))
                 .map(
                     o -> ((CompoundExpression) o).duplicate(getId()).removeOperands(operandElement))
                 .collect(Collectors.toList());
             final List<Expression> remainingOperands = otherOperands.stream()
-                .filter(o -> !(o.getExpressionType() == ExpressionType.COMPOUND
+                .filter(o -> !(o.getType() == ExpressionType.COMPOUND
                     && ((CompoundExpression) o).getOperator() == oppositeOperator
                     && ((CompoundExpression) o).getOperands().contains(operandElement)))
                 .collect(Collectors.toList());
@@ -1101,7 +1101,7 @@ public class CompoundExpression extends ComplexExpression {
   protected Set<Expression> applyDistributiveLaw() {
     final Set<Expression> resultExpressions = new HashSet<>();
     for (Expression sourceOperand : this.operands) {
-      if (sourceOperand.getExpressionType() != ExpressionType.COMPOUND) {
+      if (sourceOperand.getType() != ExpressionType.COMPOUND) {
         continue;
       }
       final List<Expression> otherOperands = getOtherOperands(sourceOperand);
@@ -1112,12 +1112,12 @@ public class CompoundExpression extends ComplexExpression {
         }
         final Expression inversedSourceSubOperand = sourceSubOperand.inverse();
         for (Expression otherOperand : otherOperands) {
-          if (otherOperand.getExpressionType() != ExpressionType.COMPOUND) {
+          if (otherOperand.getType() != ExpressionType.COMPOUND) {
             continue;
           }
           final CompoundExpression otherInfixOperand = (CompoundExpression) otherOperand;
           final boolean containsInfixOperands = (otherInfixOperand.getOperands().stream()
-              .anyMatch(o -> o.getExpressionType() == ExpressionType.COMPOUND
+              .anyMatch(o -> o.getType() == ExpressionType.COMPOUND
                   && ((CompoundExpression) o).operator == otherInfixOperand.operator.inverse()));
           if (containsInfixOperands && otherInfixOperand.getOperands().contains(sourceSubOperand)) {
             // match found
@@ -1168,7 +1168,7 @@ public class CompoundExpression extends ComplexExpression {
     final CompoundExpression resultExpression = new CompoundExpression(this.getId(), this.operator);
     // pick the first other operand that is an CompoundExpression
     final Optional<Expression> optionalOtherInfixOperand = this.operands.stream()
-        .filter(e -> !e.equals(sourceOperand) && e.getExpressionType() == ExpressionType.COMPOUND)
+        .filter(e -> !e.equals(sourceOperand) && e.getType() == ExpressionType.COMPOUND)
         .findFirst();
     if (!optionalOtherInfixOperand.isPresent()) {
       resultExpressions.add(this);

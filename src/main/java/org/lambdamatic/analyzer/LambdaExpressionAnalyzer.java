@@ -242,7 +242,7 @@ public class LambdaExpressionAnalyzer {
   }
 
   private static Statement simplify(final Statement statement) {
-    switch (statement.getStatementType()) {
+    switch (statement.getType()) {
       case CONTROL_FLOW_STMT:
         final ControlFlowStatement controlFlowStmt = (ControlFlowStatement) statement;
         final Expression simplifiedControlFlowExpression =
@@ -263,7 +263,7 @@ public class LambdaExpressionAnalyzer {
         return new ReturnStatement(simplifiedReturnExpression);
       default:
         throw new AnalyzeException(
-            "Unexpected statement type to simplify: " + statement.getStatementType());
+            "Unexpected statement type to simplify: " + statement.getType());
     }
   }
 
@@ -273,7 +273,7 @@ public class LambdaExpressionAnalyzer {
    *         otherwise returns the given {@link Expression}.
    */
   private static Expression simplify(final Expression expression) {
-    if (expression.getExpressionType() == ExpressionType.COMPOUND) {
+    if (expression.getType() == ExpressionType.COMPOUND) {
       final CompoundExpression infixExpression = (CompoundExpression) expression;
       final Expression simplifiedExpression = infixExpression.simplify();
       return ExpressionVisitorUtil.visit(simplifiedExpression, new ExpressionSanitizer());
@@ -313,7 +313,7 @@ public class LambdaExpressionAnalyzer {
    */
   private static Statement thinOut(final Statement statement) {
     LOGGER.debug("About to simplify \n\t{}", NodeUtils.prettyPrint(statement));
-    if (statement.getStatementType() == StatementType.EXPRESSION_STMT) {
+    if (statement.getType() == StatementType.EXPRESSION_STMT) {
       return statement;
     }
     // find branches that end with 'return 1'
@@ -329,7 +329,7 @@ public class LambdaExpressionAnalyzer {
       // the path that was taken (in case of ConditionalStatements)
       Statement previousStmt = null;
       while (currentStmt != null) {
-        switch (currentStmt.getStatementType()) {
+        switch (currentStmt.getType()) {
           case CONTROL_FLOW_STMT:
             final ControlFlowStatement controlFlowStatement = (ControlFlowStatement) currentStmt;
             final Expression controlFlowExpression =
@@ -344,7 +344,7 @@ public class LambdaExpressionAnalyzer {
             break;
           case RETURN_STMT:
             final Expression returnExpression = ((ReturnStatement) currentStmt).getExpression();
-            if (returnExpression.getExpressionType() == ExpressionType.METHOD_INVOCATION) {
+            if (returnExpression.getType() == ExpressionType.METHOD_INVOCATION) {
               relevantExpressions.add(0, returnExpression);
             }
             break;

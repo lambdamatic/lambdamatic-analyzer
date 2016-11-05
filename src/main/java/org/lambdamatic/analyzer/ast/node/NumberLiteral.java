@@ -119,7 +119,7 @@ public class NumberLiteral extends ObjectInstance {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.NUMBER_LITERAL;
   }
 

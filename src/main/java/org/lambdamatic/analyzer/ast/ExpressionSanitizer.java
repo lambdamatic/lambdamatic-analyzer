@@ -59,10 +59,10 @@ public class ExpressionSanitizer extends ExpressionVisitor {
     if ((expr.getOperator() == CompoundExpressionOperator.EQUALS
         || expr.getOperator() == CompoundExpressionOperator.NOT_EQUALS)
         && expr.getOperands().size() == 2 && expr.getOperands().stream()
-            .anyMatch(e -> e.getExpressionType() == ExpressionType.BOOLEAN_LITERAL)) {
+            .anyMatch(e -> e.getType() == ExpressionType.BOOLEAN_LITERAL)) {
       final ComplexExpression parentExpression = expr.getParent();
       final Optional<Expression> replacementExpr = expr.getOperands().stream()
-          .filter(e -> e.getExpressionType() != ExpressionType.BOOLEAN_LITERAL).findFirst();
+          .filter(e -> e.getType() != ExpressionType.BOOLEAN_LITERAL).findFirst();
       if (replacementExpr.isPresent()) {
         parentExpression.replaceElement(expr,
             (expr.getOperator() == CompoundExpressionOperator.EQUALS) ? replacementExpr.get()
@@ -114,7 +114,7 @@ public class ExpressionSanitizer extends ExpressionVisitor {
    */
   @Override
   public boolean visitFieldAccessExpression(final FieldAccess fieldAccess) {
-    if (fieldAccess.getSource().getExpressionType() == ExpressionType.CLASS_LITERAL) {
+    if (fieldAccess.getSource().getType() == ExpressionType.CLASS_LITERAL) {
       final ClassLiteral sourceClass = (ClassLiteral) fieldAccess.getSource();
       final String fieldName = fieldAccess.getFieldName();
       try {
@@ -126,8 +126,8 @@ public class ExpressionSanitizer extends ExpressionVisitor {
         if (parentExpression != null) {
           final Expression fieldAccessReplacement = ExpressionFactory.getExpression(replacement);
           LOGGER.trace(" replacing {} ({}) with {} ({})", fieldAccess,
-              fieldAccess.getExpressionType(), fieldAccessReplacement,
-              fieldAccessReplacement.getExpressionType());
+              fieldAccess.getType(), fieldAccessReplacement,
+              fieldAccessReplacement.getType());
           parentExpression.replaceElement(fieldAccess, fieldAccessReplacement);
         }
         // no further visiting on this (obsolete) branch of the expression tree.

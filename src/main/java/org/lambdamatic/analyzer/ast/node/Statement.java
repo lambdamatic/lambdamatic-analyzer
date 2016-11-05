@@ -32,7 +32,7 @@ public abstract class Statement extends Node {
   /**
    * @return the {@link StatementType} of this {@link Statement}.
    */
-  public abstract StatementType getStatementType();
+  public abstract StatementType getType();
 
   /**
    * Sets the parent of this statement in the AST.

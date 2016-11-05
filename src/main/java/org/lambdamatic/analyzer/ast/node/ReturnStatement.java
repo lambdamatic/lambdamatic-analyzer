@@ -27,7 +27,7 @@ public class ReturnStatement extends SimpleStatement {
   }
 
   @Override
-  public StatementType getStatementType() {
+  public StatementType getType() {
     return StatementType.RETURN_STMT;
   }
 

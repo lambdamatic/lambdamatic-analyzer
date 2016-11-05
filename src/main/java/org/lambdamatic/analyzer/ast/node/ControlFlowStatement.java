@@ -59,7 +59,7 @@ public class ControlFlowStatement extends Statement {
   }
 
   @Override
-  public StatementType getStatementType() {
+  public StatementType getType() {
     return StatementType.CONTROL_FLOW_STMT;
   }
 

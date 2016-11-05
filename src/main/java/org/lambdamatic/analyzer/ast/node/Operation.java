@@ -69,7 +69,7 @@ public class Operation extends ComplexExpression {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.OPERATION;
   }
 

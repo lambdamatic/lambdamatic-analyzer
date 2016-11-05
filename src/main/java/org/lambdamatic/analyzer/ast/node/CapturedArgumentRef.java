@@ -83,7 +83,7 @@ public class CapturedArgumentRef extends Expression {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.CAPTURED_ARGUMENT_REF;
   }
 

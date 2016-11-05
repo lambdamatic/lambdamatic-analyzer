@@ -52,7 +52,7 @@ public class Assignment extends ComplexExpression {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.ASSIGNMENT;
   }
 

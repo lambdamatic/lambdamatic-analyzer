@@ -31,7 +31,7 @@ public class ExpressionStatement extends SimpleStatement {
   }
 
   @Override
-  public Statement.StatementType getStatementType() {
+  public Statement.StatementType getType() {
     return StatementType.EXPRESSION_STMT;
   }
 

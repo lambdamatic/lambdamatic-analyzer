@@ -41,7 +41,7 @@ public class NullLiteral extends ObjectInstance {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.NULL_LITERAL;
   }
 

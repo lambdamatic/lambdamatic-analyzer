@@ -25,7 +25,7 @@ public abstract class StatementVisitor {
    */
   public boolean visit(final Statement stmt) {
     if (stmt != null) {
-      switch (stmt.getStatementType()) {
+      switch (stmt.getType()) {
         case EXPRESSION_STMT:
           return visitExpressionStatement((ExpressionStatement) stmt);
         case CONTROL_FLOW_STMT:

@@ -128,7 +128,7 @@ public class FieldAccess extends ComplexExpression {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.FIELD_ACCESS;
   }
 

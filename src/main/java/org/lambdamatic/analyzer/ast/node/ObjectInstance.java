@@ -48,7 +48,7 @@ public class ObjectInstance extends Expression {
   }
 
   @Override
-  public ExpressionType getExpressionType() {
+  public ExpressionType getType() {
     return ExpressionType.OBJECT_INSTANCE;
   }
 
